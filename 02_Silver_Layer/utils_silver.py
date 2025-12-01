@@ -248,18 +248,21 @@ def dq_left_anti_ref(df: DataFrame, ref_df: DataFrame, key_col: str, ref_col: st
 # ------------------------------------------------
 # 8) METRICS (delta path)
 # ------------------------------------------------
-def write_metric(name: str, value, context: str, paths_silver: dict):
+def write_metric(spark, name: str, value, context: str, paths_silver: dict):
     mdf = spark.createDataFrame(
         [(name, str(value), context, datetime.utcnow())],
         "metric STRING, value STRING, context STRING, ts TIMESTAMP"
     )
 
-    (mdf.write
+    (
+        mdf.write
         .format("delta")
         .mode("append")
-        .save(paths_silver["_metrics"]))
+        .save(paths_silver["_metrics"])
+    )
 
     print(f"[METRIC] {name}={value} ctx={context}")
+
 
 
 print("✅ utils_silver.py loaded")
