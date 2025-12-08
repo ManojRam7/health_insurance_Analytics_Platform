@@ -1,0 +1,333 @@
+**Title:**
+Enterprise ML Feature Layer – Policy Churn & Claims Risk
+
+**Scope:**
+This document explains how we designed and built:
+
+* `health_gold.ft_policy_churn`
+* `health_gold.ft_claims_risk`
+* `health_gold.ft_policy_churn_split`
+* `health_gold.ft_claims_risk_split`
+
+These are **ML-ready feature tables** on top of the Gold layer, used for:
+
+* **Policy churn / renewal modelling**
+* **Claims fraud / high-cost risk modelling**
+
+They are designed to be understandable to **non-technical business teams** and robust enough for **data science** usage.
+
+────────────────────────────────────────
+
+1. BUSINESS QUESTIONS & TARGETS
+   ────────────────────────────────────────
+
+1.1 Policy Churn (ft_policy_churn)
+
+Business question:
+
+> “Given information about a customer’s policy, can we predict whether the policy will renew or churn?”
+
+Target label: `Churn_Label`
+
+* `Churn_Label = 1` → Policy **churned** (not renewed)
+* `Churn_Label = 0` → Policy **retained** (renewed)
+
+We derive this from Silver/Gold policy renewal flags:
+
+* If `Renewal_Offered_Flag = 1` AND `Renewal_Accepted_Flag = 1` → Retained → `Churn_Label = 0`
+* If `Renewal_Offered_Flag = 1` AND `Renewal_Accepted_Flag = 0` → Churned → `Churn_Label = 1`
+* If no renewal offer, we can either drop or keep as “not in scope” (left as `NULL` in label if needed).
+
+This mirrors how a real insurer thinks:
+They only want to measure churn where a **renewal offer was made**.
+
+1.2 Claims Risk (ft_claims_risk)
+
+Business question:
+
+> “Can we predict which claims are likely to be fraudulent or high-cost?”
+
+Target labels:
+
+* `Is_Fraudulent_Claim`
+
+  * Derived from `Claim_Fraud_Label` and `Provider_Fraud_Label`
+  * 1 = suspicious/fraudulent; 0 = not flagged
+* `Is_High_Cost`
+
+  * Derived from the high-cost logic used in Gold claims mart
+  * 1 = high-cost claim; 0 = normal cost
+
+This matches the typical use-cases of a claims analytics team:
+
+* Prioritise suspicious claims for investigation.
+* Identify high-cost claims early for reserving, negotiation, or alternate handling.
+
+────────────────────────────────────────
+2. DATA SOURCES (UPSTREAM TABLES)
+────────────────────────────────────────
+
+The ML feature tables sit **on top of the Gold layer**:
+
+* `health_gold.fact_policies`
+* `health_gold.fact_claims`
+* `health_gold.dim_channel`
+* `health_gold.dim_product_line`
+* `health_gold.dim_claim_type`
+* `health_gold.dim_providers`
+
+We deliberately **do not go back to raw or bronze** – everything is built on **curated, DQ-checked** Silver/Gold tables.
+
+────────────────────────────────────────
+3. FT_POLICY_CHURN – FEATURE DESIGN
+────────────────────────────────────────
+
+3.1 Base grain
+
+* **Grain:** one row per **policy**.
+* Base table: `health_gold.fact_policies`.
+
+This ensures a **supervised learning row** = “one policy renewal decision”.
+
+3.2 Core columns kept from fact_policies
+
+We keep the most important business fields:
+
+* `Policy_ID`, `Customer_ID`
+* `Product_Line`
+* `Channel`
+* `Sum_Insured_GBP`
+* `Annual_Premium_GBP`
+* `Policy_Start_Date`, `Policy_End_Date`
+* `Policy_Duration_Days`
+* `Renewal_Offered_Flag`, `Renewal_Accepted_Flag`
+* `Renewal_Conversion`
+* `Tenure_Band`
+* `Premium_Band`
+* `Discount_Band`
+* `Renewal_Outcome`
+* Data-quality flags:
+
+  * `dq_money_valid`
+  * `dq_discount_valid`
+  * `dq_renewal_valid`
+
+These give a **complete view of the policy** at renewal time: what product, what premium, what duration, what channel, etc.
+
+3.3 Engineered features
+
+We add extra ML-friendly features:
+
+* `Churn_Label`
+
+  * 1/0 label as defined earlier.
+* `Is_Discounted`
+
+  * 1 if `Discount_Band` is not “No discount”.
+  * Tells the model whether a discount was used to keep the customer.
+* `Premium_per_1k_SumInsured`
+
+  * `Annual_Premium_GBP / (Sum_Insured_GBP / 1000)`
+  * A “rate per 1k” feature commonly used by actuaries.
+* Optional: one-hot or encoded features will be done later in the ML environment, not in this table.
+
+3.4 Leakage avoidance
+
+We **only use features that are known before or at renewal time**, such as:
+
+* historical policy details
+* existing renewal flags (from previous renewal, if applicable)
+* channel and product information
+
+We **don’t include** any future information such as post-renewal claims.
+
+3.5 Data-quality usage
+
+* `dq_*` columns can be used in two ways:
+
+  * as **filters** to keep only high-quality rows for training.
+  * as **features** to let the model learn that “dodgy” records behave differently.
+* For production scoring, the same logic will run so that featurisation is consistent.
+
+────────────────────────────────────────
+4. FT_CLAIMS_RISK – FEATURE DESIGN
+────────────────────────────────────────
+
+4.1 Base grain
+
+* **Grain:** one row per **claim**.
+* Base table: `health_gold.fact_claims`, joined with `dim_claim_type` and `dim_providers`.
+
+4.2 Core columns
+
+Key fields retained:
+
+* `Claim_ID`
+* `Member_Key`
+* `Provider_ID`
+* `Claim_Type_Name`, `Claim_Type_Code`
+* `Claim_Status`
+* `Claim_Amount_GBP`
+* `Payout_GBP`
+* `Days_To_Settle`
+* `High_Cost_Claim_Flag`
+* `Claim_Fraud_Label`
+* `Provider_Fraud_Label`
+* `Provider_Risk_Tier`
+* `dq_money_valid`
+* `dq_date_valid`
+
+4.3 Engineered features
+
+* `Payout_to_Amount_Ratio`
+
+  * `Payout_GBP / Claim_Amount_GBP` (safe divide)
+  * Indicates how much of the claimed amount is actually paid.
+* `Is_Fraudulent_Claim`
+
+  * 1 if either `Claim_Fraud_Label` or `Provider_Fraud_Label` suggests fraud.
+* `Is_High_Cost`
+
+  * 1 if `High_Cost_Claim_Flag = 1`.
+
+These features help models distinguish:
+
+* low vs high cost claims
+* normal vs suspicious patterns
+* risky vs low-risk providers
+
+4.4 Leakage avoidance
+
+* We use **first-notice features** only (type, provider, initial amount, early DQ flags).
+* For example, we don’t feed **final recovered amounts** or outcomes that would only be known after investigation unless we explicitly model “post-settlement” risk.
+
+────────────────────────────────────────
+5. TRAIN / TEST SPLITS
+────────────────────────────────────────
+
+To make the feature layer plug-and-play for ML:
+
+* We create split tables:
+
+  * `ft_policy_churn_split`
+  * `ft_claims_risk_split`
+
+Each has:
+
+* All columns from the base feature table.
+* Plus a column: `dataset_split` with values:
+
+  * `'train'`
+  * `'test'`
+
+Split ratios:
+
+* Policy churn:
+
+  * train ≈ **80%** (e.g. 304,742 rows)
+  * test ≈ **20%** (e.g. 76,367 rows)
+* Claims risk:
+
+  * train ≈ **80%** (e.g. 4,461,02x rows)
+  * test ≈ **20%** (e.g. 1,121,09x rows)
+
+Splitting method:
+
+* Reproducible random split using `F.rand(seed)` or similar.
+* “Stratified by label” in concept: the idea is to keep similar fraud / churn rates in both train and test.
+
+Business impact:
+
+* Data scientists can **start modelling immediately** by just filtering:
+
+  * `WHERE dataset_split = 'train'`
+  * `WHERE dataset_split = 'test'`
+* No hidden assumptions; the split is fully transparent and stored as Delta.
+
+────────────────────────────────────────
+6. ARCHITECTURE OVERVIEW (ML LAYER)
+────────────────────────────────────────
+
+ASCII view:
+
+Silver → Gold → ML Features
+
+rawdata  →  silverdata          →         golddata
+
+---
+
+• policies   • policies_silver           • fact_policies
+• members    • members_silver            • fact_claims
+• claims     • claims_silver    → join   • dim_*
+• providers  • providers_silver          • dm_* (marts)
+↓
+• ft_policy_churn
+• ft_claims_risk
+• ft_*_split
+
+The ML tables are **purely consumers**; they don’t feed back into upstream layers, keeping governance clean.
+
+────────────────────────────────────────
+7. HOW TO EXPLAIN THIS IN AN INTERVIEW
+────────────────────────────────────────
+
+Short script:
+
+> “On top of the Gold layer, I built dedicated ML feature tables for two key use-cases: policy churn and claims risk.
+> For each, I defined a clear supervised learning target (churn vs retain, fraudulent/high-cost vs normal) and engineered features that are available at decision time – such as premium structure, product line, tenure, payout-to-amount ratio, and provider risk tier.
+> I reused the existing data-quality flags so data scientists can either filter out or explicitly model noisy records.
+> Finally, I created pre-split train and test feature tables so ML teams and notebooks can consume a consistent, governed dataset directly from the lake, without re-implementing the pipeline logic in each experiment.”
+
+────────────────────────────────────────
+8. SLIDE-STYLE SUMMARY
+────────────────────────────────────────
+
+Slide 1 – Objective
+
+* Build **ML-ready feature tables** on top of Gold layer.
+* Use cases:
+
+  * Policy churn / renewal.
+  * Claims fraud & high-cost risk.
+
+Slide 2 – Source Architecture
+
+* Inputs: `fact_policies`, `fact_claims`, `dim_channel`, `dim_product_line`, `dim_claim_type`, `dim_providers`.
+* Outputs: `ft_policy_churn`, `ft_claims_risk`, plus split versions.
+
+Slide 3 – Policy Churn Features
+
+* Target: `Churn_Label` (1 = churned, 0 = renewed).
+* Key features:
+
+  * Product line, channel, sum insured, premium.
+  * Tenure band, premium band, discount band.
+  * Renewal flags and `Renewal_Outcome`.
+  * Engineered: `Premium_per_1k_SumInsured`, `Is_Discounted`.
+  * DQ flags: `dq_money_valid`, `dq_discount_valid`, `dq_renewal_valid`.
+
+Slide 4 – Claims Risk Features
+
+* Targets:
+
+  * `Is_Fraudulent_Claim`
+  * `Is_High_Cost`
+* Key features:
+
+  * Claim type, status, amount, payout.
+  * `Payout_to_Amount_Ratio`, `Days_To_Settle`.
+  * Provider fraud flag & risk tier.
+  * Data-quality flags: `dq_money_valid`, `dq_date_valid`.
+
+Slide 5 – Train/Test Split Design
+
+* Stored as separate Delta tables with `dataset_split` column.
+* Approx 80/20 splits for both churn and claims.
+* Immediate consumption by notebooks / ML platforms.
+
+Slide 6 – Business Value
+
+* Fast, repeatable ML experimentation.
+* Clear lineage from policy/claims to features.
+* Strong governance: all in Gold container, with DQ and splits embedded.
+* Easy to explain to business teams (transparent logic and labels).

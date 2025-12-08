@@ -1,0 +1,286 @@
+# 📄 Policies Silver Layer – Architecture & Business Report
+
+## Table of Contents
+
+1. [Context & Objective](#1-context--objective)  
+2. [Bronze vs Silver Policies](#2-bronze-vs-silver-policies)  
+3. [Transformations: Bronze → Silver](#3-transformations-bronze--silver)  
+4. [New Silver Features](#4-new-silver-features)  
+5. [Data Quality & Validation](#5-data-quality--validation)  
+6. [Architecture Diagram](#6-architecture-diagram)  
+7. [Interview Explanation](#7-interview-explanation)  
+
+---
+
+## 1. Context & Objective
+
+The Policies Silver layer transforms **raw, inconsistent policy records** into a **clean, validated, business-ready dataset** that:
+
+- 📋 Enforces enterprise data standards  
+- ✅ Validates policy identity & dates  
+- 💰 Ensures financial data sanity  
+- 📊 Adds KPIs for churn & profitability analytics  
+- 🔒 Provides transparent data quality signals  
+
+**Enterprise standards applied:**
+- Schema enforcement  
+- Primary key validation  
+- Date consistency & repair  
+- Financial sanity checks  
+- Renewal logic validation  
+- Deduplication (latest record wins)  
+- Feature engineering (duration, renewal conversion)  
+- Data quality flags  
+- Reference dimension validation  
+- Quarantine-first approach  
+- Metrics logging  
+
+---
+
+## 2. Bronze vs Silver Policies
+
+| Area | Bronze Issues | Silver Solution |
+|------|---------------|-----------------|
+| **Schema** | Raw CSV types | Enforced enterprise schema |
+| **PK (Policy_ID)** | Unvalidated | Strictly validated, duplicates removed |
+| **Dates** | Reversed, nulls | Fixed, validated order |
+| **Money (Premium, Sum Insured)** | Negatives, nulls | Validated non-negative |
+| **Discounts** | Out-of-range | Bounded 0–100% |
+| **Renewal Logic** | Inconsistent | Enforced: accepted ⊆ offered |
+| **Channels & Products** | Messy text | Standardized via dimensions |
+| **Duration Metrics** | None | Policy_Duration_Days added |
+| **Renewal KPI** | None | Renewal_Conversion (corrected) |
+| **DQ Signals** | None | 3 flags (money, discount, renewal) |
+| **Quarantine** | N/A | Bad records isolated |
+
+**Result:** Clean, validated Policies dataset trusted for pricing, churn, profitability analytics.
+
+---
+
+## 3. Transformations: Bronze → Silver
+
+### Read & Enforce Schema
+
+Cast columns to enterprise schema:
+```
+Policy_ID, Customer_ID, Product_Line,
+Policy_Start_Date, Policy_End_Date,
+Sum_Insured_GBP, Premium_GBP,
+Discount_Percent, Renewal_Offered, Renewal_Accepted,
+Claim_Count, Total_Claims_GBP,
+Channel, Status
+```
+
+### PK Validation
+
+`Policy_ID` must not be NULL → otherwise quarantined.
+
+### Deduplication
+
+Keep latest record per `Policy_ID`:
+```
+drop_dupes_keep_latest(["Policy_ID"], ["Policy_Start_Date"])
+```
+
+### Date Validation & Repair
+
+**Check rules:**
+- Policy_Start_Date ≤ Policy_End_Date (no reversals)  
+- Both dates non-NULL  
+- Dates within 50-year window (sanity check)  
+
+**Flag:** `dq_date_valid` (1 = valid, 0 = suspicious)
+
+### Money Validation
+
+**Check rules:**
+- Sum_Insured_GBP >= 0  
+- Premium_GBP >= 0  
+- Premium_GBP <= Sum_Insured_GBP (premium sanity)  
+
+**Flag:** `dq_money_valid` (1 = valid, 0 = suspicious)
+
+### Discount Validation
+
+**Check rules:**
+- Discount_Percent between 0 and 100  
+- If NULL, treat as 0  
+
+**Flag:** `dq_discount_valid` (1 = valid, 0 = out-of-range)
+
+### Renewal Logic Validation
+
+**Enforce business rule:** If Renewal_Accepted = 1, then Renewal_Offered must = 1  
+(Cannot accept renewal that wasn't offered)
+
+**Flag:** `dq_renewal_valid` (1 = consistent, 0 = violates logic)
+
+### Reference Dimension Lookup
+
+- **Channel:** Map to controlled list (Online, Phone, Broker, Direct, etc.)  
+- **Product_Line:** Map to controlled list (Motor, Home, Travel, etc.)  
+- Invalid values → set to 'Unknown' (not quarantined)  
+
+### Feature Engineering
+
+#### Policy_Duration_Days
+```python
+Policy_Duration_Days = datediff(Policy_End_Date, Policy_Start_Date)
+# NULL if dates missing/invalid
+```
+**Business value:**
+- Churn modeling (customer tenure)  
+- Profitability analysis (cost per day)  
+- Product comparison (contract length)  
+- Exposure calculations (underwriting)  
+
+#### Renewal_Conversion
+```python
+Renewal_Conversion = CASE
+  WHEN Renewal_Offered = 1 AND Renewal_Accepted = 1 THEN 1
+  WHEN Renewal_Offered = 1 AND Renewal_Accepted = 0 THEN 0
+  ELSE NULL
+END
+# Measures: offered renewals that were accepted
+```
+**Business value:**
+- **Corrected renewal rate** (not inflated by bad data)  
+- Used by sales, underwriting, operations  
+- Critical for retention KPIs  
+
+### Write to Silver
+
+- **Delta path:** `silverdata/policies`  
+- **Table:** `health_silver.policies`  
+- **Schema-aware overwrite** ensures stability  
+
+### Metrics Logging
+
+Tracked in `silverdata/_metrics`:
+- `rowcount_policies_silver`  
+- `distinct_policy_ids`  
+- `dq_date_valid_coverage %`  
+- `dq_money_valid_coverage %`  
+- `dq_discount_valid_coverage %`  
+- `dq_renewal_valid_coverage %`  
+
+---
+
+## 4. New Silver Features
+
+| Feature | Type | Purpose | Example |
+|---------|------|---------|---------|
+| **Policy_Duration_Days** | int | Days from start to end | 365, 730, NULL |
+| **Renewal_Conversion** | int | Offered renewals accepted | 1, 0, NULL |
+| **dq_money_valid** | int | Money amounts sane | 1 or 0 |
+| **dq_discount_valid** | int | Discount 0–100% | 1 or 0 |
+| **dq_renewal_valid** | int | Renewal logic consistent | 1 or 0 |
+
+**Key insight:** These fields are **added by Silver**, not in Bronze. They enable:
+- 📊 Reliable KPI reporting  
+- 🔍 Transparent data quality  
+- 💰 Accurate financial analysis  
+- 📈 Churn & retention modeling  
+
+---
+
+## 5. Data Quality & Validation
+
+### Quarantine Strategy
+
+No bad data is silently dropped. Invalid rows are captured with:
+- Violation code (PK_NULL, DATE_REVERSED, MONEY_NEGATIVE, etc.)  
+- Timestamp  
+- Full record  
+
+**Location:** `silverdata/_quarantine/policies/<violation_type>`
+
+### DQ Expectations
+
+Hard rules (quarantine on failure):
+- `Policy_ID` not NULL  
+
+Soft rules (flag but include):
+- `dq_date_valid`, `dq_money_valid`, `dq_discount_valid`, `dq_renewal_valid`  
+
+This allows:
+- Filtering in dashboards: "only DQ-clean rows"  
+- Monitoring quality trends  
+- Transparent governance  
+
+---
+
+## 6. Architecture Diagram
+
+```
+┌──────────────────────────────────┐
+│   Bronze Layer (rawdata)          │
+│   bronze.policies                 │
+│   • Raw types                     │
+│   • Bad dates                     │
+│   • Negative money                │
+│   • Invalid discounts             │
+│   • No KPIs                       │
+│   • No DQ tracking                │
+└────────────┬──────────────────────┘
+             │
+             │  Schema enforcement
+             │  PK validation
+             │  Date validation & repair
+             │  Money validation
+             │  Discount validation
+             │  Renewal logic validation
+             │  Channel & product standardization
+             │  Policy_Duration_Days calc
+             │  Renewal_Conversion derivation
+             │  Add 3 DQ flags
+             ▼
+┌──────────────────────────────────┐
+│   Silver Layer (silverdata)       │
+│   health_silver.policies            │
+│   • Enterprise schema             │
+│   • Deduplicated                  │
+│   • Valid dates & money           │
+│   • Valid discounts               │
+│   • Consistent renewal logic      │
+│   • Standardized channels/products│
+│   • Policy_Duration_Days KPI      │
+│   • Renewal_Conversion KPI        │
+│   • 3 DQ flags (date, money, etc.)│
+└────────────┬──────────────────────┘
+             │
+      ┌──────┴──────┬──────────────┐
+      ▼             ▼              ▼
+  _quarantine  _metrics      Dashboards
+ (bad policies) (observability) (BI tools)
+      │             │              │
+      └─────────────┼──────────────┘
+                    │
+                    ▼
+         Policy KPIs & Pricing
+        Churn & Retention Analysis
+        Profitability Modeling
+```
+
+---
+
+## 7. Interview Explanation
+
+> "The Policies Silver layer transforms raw policy records into a trusted, analysis-ready dataset. I enforce strict schema, validate primary keys, fix and validate dates (ensuring start ≤ end), check financial sanity (non-negative, reasonable ranges), validate renewal logic (accepted ⊆ offered), standardize channels and products via reference dimensions, and add critical KPIs like Policy_Duration_Days and corrected Renewal_Conversion. I use transparent data quality flags so downstream users can confidently filter data. All invalid records are quarantined with audit codes, never silently dropped. The result is a clean, governance-ready Policies dataset that powers pricing, churn, and profitability analytics."
+
+### Key Talking Points
+- ✅ Enforced enterprise schema  
+- ✅ PK validation & deduplication  
+- ✅ Date validation & repair (no reversals)  
+- ✅ Money field validation (non-negative, reasonable)  
+- ✅ Discount validation (0–100%)  
+- ✅ Renewal logic enforcement (offered ⊇ accepted)  
+- ✅ Reference dimension standardization  
+- ✅ Policy_Duration_Days KPI (churn, profitability)  
+- ✅ Renewal_Conversion KPI (corrected retention rate)  
+- ✅ 3 DQ flags (date, money, discount, renewal)  
+- ✅ Quarantine + metrics for governance  
+
+---
+
+**Last Updated:** December 2025 | **Status:** Production | **Owner:** Data Engineering

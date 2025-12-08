@@ -1,0 +1,296 @@
+# 📊 Gold fact_claims Layer – Architecture & Business Report
+
+## Table of Contents
+
+1. [Context & Objective](#1-context--objective)  
+2. [Silver vs Gold fact_claims](#2-silver-vs-gold-fact_claims)  
+3. [Transformations: Silver → Gold](#3-transformations-silver--gold)  
+4. [New Gold Features](#4-new-gold-features)  
+5. [Schema & Fact Structure](#5-schema--fact-structure)  
+6. [Architecture Diagram](#6-architecture-diagram)  
+7. [Interview Explanation](#7-interview-explanation)  
+
+---
+
+## 1. Context & Objective
+
+The Gold `fact_claims` layer transforms **clean Silver claims** into an **analytics-ready fact table** that:
+
+- 📊 Combines claims with provider & fraud context  
+- ✅ Derives business KPIs at the claim level  
+- 💰 Enables cost, fraud, and performance analytics  
+- 🔗 Joins multiple Silver dimensions (Claims + Providers)  
+- 🔒 Maintains transparent data quality signals  
+
+**Enterprise standards applied:**
+- Fact table design (grain: one row per claim)  
+- FK joins to dimension tables (Providers)  
+- Derived metrics & ratios  
+- High-cost claim flagging  
+- DQ flag carryover  
+- Schema enforcement  
+- Metrics logging  
+
+---
+
+## 2. Silver vs Gold fact_claims
+
+| Area | Silver Claims | Gold fact_claims |
+|------|--------------|------------------|
+| **Grain** | One row per claim | One row per claim (enriched) |
+| **Provider Context** | Provider_ID only | Provider_ID + Fraud_Flag joined |
+| **KPIs** | Days_To_Settle | Days_To_Settle + Payout_Ratio + High_Cost_Flag |
+| **Fraud Signal** | Claim-level only | Claim-level + Provider fraud context |
+| **DQ Flags** | dq_money_valid, dq_date_valid | Same flags carried forward |
+| **Cost Analysis** | Basic amounts | Ratio of payout to claimed |
+| **Segmentation** | Limited | By provider, cost tier, fraud risk |
+| **BI Readiness** | Intermediate | Full (joins pre-computed) |
+| **ML Features** | Limited | Rich feature set |
+
+**Result:** Analytics-ready fact table for BI, dashboards, and ML models.
+
+---
+
+## 3. Transformations: Silver → Gold
+
+### Read Silver Inputs
+
+- **Silver Claims:** Clean claims with Days_To_Settle, dq_money_valid, dq_date_valid  
+- **Silver Providers:** Provider_ID + Fraud_Flag  
+
+### Join with Providers
+
+```python
+fact_claims = silver_claims.join(
+    silver_providers,
+    on="Provider_ID",
+    how="left"
+)
+# Result: Each claim now has Provider_Fraud_Flag
+```
+
+**Business impact:**
+- Enables fraud filtering at claim level  
+- Identifies claims from risky providers  
+- Supports provider-level risk segmentation  
+
+### Derive Payout Ratio
+
+```python
+Payout_to_Claim_Ratio = Payout_GBP / Claim_Amount_GBP
+# Null if Claim_Amount_GBP = 0 or NULL
+```
+
+**Business value:**
+- Measures actual reimbursement vs claimed amount  
+- Identifies over/under-compensation patterns  
+- Supports pricing & underwriting analysis  
+- Audit & fraud indicator  
+
+### High-Cost Claim Flagging
+
+```python
+# Top 10% of claims by Payout_GBP
+high_cost_threshold = quantile(Payout_GBP, 0.90)
+
+High_Cost_Claim_Flag = CASE
+  WHEN Payout_GBP >= high_cost_threshold THEN 1
+  ELSE 0
+END
+```
+
+**Business value:**
+- Focuses management attention on expensive claims  
+- Enables cost-tier segmentation  
+- Supports cost control & prioritization  
+
+### Carryover DQ Flags
+
+Preserve Silver DQ signals:
+- `dq_money_valid` (financial data trustworthiness)  
+- `dq_date_valid` (date sequence trustworthiness)  
+
+**Business value:**
+- Allows filtering to "DQ-clean" claims in dashboards  
+- Maintains traceability of data quality  
+- Transparent governance  
+
+### Enforce Fact Schema
+
+Standardized columns:
+```
+Claim_ID, Provider_ID, Member_Key,
+Date_Reported, Date_Settled,
+Payout_GBP, Claim_Amount_GBP,
+Payout_to_Claim_Ratio, High_Cost_Claim_Flag,
+Fraud_Label (claim-level), Provider_Fraud_Flag,
+Claim_Type, Claim_Status,
+Days_To_Settle,
+dq_money_valid, dq_date_valid,
+load_timestamp
+```
+
+### Write to Gold
+
+- **Delta path:** `silverdata/gold/fact_claims`  
+- **Table:** `health_gold.fact_claims`  
+- **Partitioning:** By Date_Reported (year, month) for query performance  
+- **Schema-aware overwrite** ensures stability  
+
+### Metrics Logging
+
+Tracked in `silverdata/_metrics`:
+- `rowcount_fact_claims_gold`  
+- `distinct_claim_ids`  
+- `high_cost_claims_%`  
+- `dq_clean_claims_%`  
+- `provider_fraud_flag_coverage_%`  
+
+---
+
+## 4. New Gold Features
+
+| Feature | Type | Purpose | Example |
+|---------|------|---------|---------|
+| **Payout_to_Claim_Ratio** | float | Actual payout ÷ claimed amount | 0.85, 1.0, NULL |
+| **High_Cost_Claim_Flag** | int | Top 10% by payout | 1 or 0 |
+| **Provider_Fraud_Flag** | int | Fraud risk from provider dimension | 1 or 0 |
+
+**Key insight:** Gold pre-computes joins and KPIs. Silver users can self-serve; Gold users have:
+- �� Pre-joined provider context  
+- 💰 Ready-to-use cost ratios  
+- 🚨 Pre-flagged high-cost claims  
+- 🔍 Transparent DQ lineage  
+
+---
+
+## 5. Schema & Fact Structure
+
+### Core Fact Fields
+
+| Column | Type | Source | Grain Identifier |
+|--------|------|--------|------------------|
+| Claim_ID | string | Silver Claims | ✅ Yes (grain key) |
+| Provider_ID | string | Silver Claims | ✅ Yes (grouping) |
+| Member_Key | string | Silver Claims | Supporting |
+
+### Date Dimension Fields
+
+| Column | Type | Source | Use |
+|--------|------|--------|-----|
+| Date_Reported | date | Silver Claims | Claim initiation |
+| Date_Settled | date | Silver Claims | Claim completion |
+| Days_To_Settle | int | Silver Claims | SLA/operations KPI |
+
+### Financial Measure Fields
+
+| Column | Type | Source | Use |
+|--------|------|--------|-----|
+| Claim_Amount_GBP | decimal | Silver Claims | Requested amount |
+| Payout_GBP | decimal | Silver Claims | Actual payment |
+| Payout_to_Claim_Ratio | float | **Derived (Gold)** | Reimbursement %, fraud signal |
+
+### Classification & Risk Fields
+
+| Column | Type | Source | Use |
+|--------|------|--------|-----|
+| Claim_Type | string | Silver Claims | Segmentation (Hospital, etc.) |
+| Claim_Status | string | Silver Claims | Lifecycle (Settled, Pending, etc.) |
+| Fraud_Label | int | Silver Claims | Claim-level fraud flag |
+| Provider_Fraud_Flag | int | **Silver Providers** | Provider risk context |
+| High_Cost_Claim_Flag | int | **Derived (Gold)** | Cost-tier segmentation |
+
+### Data Quality Fields
+
+| Column | Type | Source | Use |
+|--------|------|--------|-----|
+| dq_money_valid | int | Silver Claims | Filter to trusted financials |
+| dq_date_valid | int | Silver Claims | Filter to trusted dates |
+
+---
+
+## 6. Architecture Diagram
+
+```
+┌──────────────────────────────────┐
+│   Silver Layer (silverdata)       │
+│                                  │
+│  silver.claims          silver.providers
+│  • Cleaned              • Deduplicated
+│  • Validated            • Fraud_Flag
+│  • Days_To_Settle       • Validated
+│  • DQ flags             │
+│    │                    │
+│    └────────┬───────────┘
+│             │
+│    Join claims → providers
+│    Derive payout ratio
+│    Flag high-cost claims
+│    Carry DQ flags
+│             │
+│             ▼
+┌──────────────────────────────────┐
+│   Gold Layer (silverdata/gold)    │
+│   health_gold.fact_claims           │
+│                                  │
+│  • Grain: 1 row per Claim_ID     │
+│  • Provider context joined       │
+│  • Payout_to_Claim_Ratio KPI     │
+│  • High_Cost_Claim_Flag          │
+│  • DQ flags carried forward      │
+│  • Partitioned by Date_Reported  │
+│  • Metrics logged                │
+└──────────────────────────────────┘
+           │
+      ┌────┴─────┬──────────────┐
+      ▼          ▼              ▼
+  Dashboards  ML Models   Executive Reports
+  (BI tools)  (fraud,     (cost, performance,
+              cost pred)   SLAs)
+```
+
+---
+
+## 7. Interview Explanation
+
+> "The Gold fact_claims table is the analytics-ready view of all claims. I built it on top of Silver claims by joining in provider fraud context, deriving business KPIs like payout-to-claim ratios and high-cost flags, and pre-computing everything stakeholders need for reporting, BI dashboards, and ML. Each claim maintains its data quality flags so users can filter to trustworthy data if needed. The grain is one row per claim, making it perfect for direct consumption by BI tools, dashboards, and predictive models. It represents the final, business-optimized version of the claims dataset—the single source of truth for all claims analytics."
+
+### Key Talking Points
+- ✅ Grain: One row per Claim_ID  
+- ✅ Joined with provider fraud context  
+- ✅ Payout_to_Claim_Ratio KPI (reimbursement analysis)  
+- ✅ High_Cost_Claim_Flag (top 10% by spend)  
+- ✅ DQ flags carried forward for transparency  
+- ✅ Pre-computed joins (no user-side joins needed)  
+- ✅ Partitioned by Date_Reported (query performance)  
+- ✅ Metrics logged for observability  
+- ✅ Direct consumption by BI/ML  
+- ✅ Single source of truth for claims analytics  
+
+---
+
+## 8. Business Value
+
+### For BI & Dashboards
+- Pre-joined dimensions eliminate user-side joins  
+- Cost ratios & high-cost flags enable instant segmentation  
+- DQ flags allow filtering to trusted data  
+
+### For Data Science & ML
+- Rich feature set (fraud context, cost metrics, dates)  
+- Pre-computed KPIs save modeling effort  
+- Gold schema standardization ensures consistency  
+
+### For Operations & Finance
+- Claim settlement times (Days_To_Settle) drive SLA monitoring  
+- High-cost flags focus management attention  
+- Payout ratios support pricing & underwriting decisions  
+
+### For Risk & Fraud Teams
+- Provider fraud flags enable provider-level risk assessment  
+- Claim-level + provider fraud creates 2D fraud matrix  
+- Enables pattern detection across claim types & providers  
+
+---
+
+**Last Updated:** December 2025 | **Status:** Production | **Owner:** Data Engineering

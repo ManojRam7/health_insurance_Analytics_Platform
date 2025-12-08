@@ -1,0 +1,233 @@
+# 🏥 Providers Silver Layer – Architecture & Business Report
+
+## Table of Contents
+
+1. [Context & Objective](#1-context--objective)  
+2. [Bronze vs Silver Providers](#2-bronze-vs-silver-providers)  
+3. [Transformations: Bronze → Silver](#3-transformations-bronze--silver)  
+4. [New Silver Features](#4-new-silver-features)  
+5. [The FK Fix: Claims → Providers](#5-the-fk-fix-claims--providers)  
+6. [Architecture Diagram](#6-architecture-diagram)  
+7. [Interview Explanation](#7-interview-explanation)  
+
+---
+
+## 1. Context & Objective
+
+The Providers Silver layer solves a **critical referential integrity issue**: claims reference providers that don't exist in the Bronze providers dimension.
+
+This layer transforms **inconsistent provider data** into a **complete, validated provider dimension** that:
+
+- 📋 Ensures every claim has a valid provider  
+- ✅ Enforces provider FK integrity (100%)  
+- 🔗 Preserves fraud risk attributes  
+- 📊 Adds lineage & audit trails  
+- 🔒 Enables provider-level analytics  
+
+**Enterprise standards applied:**
+- Schema enforcement  
+- Primary key validation  
+- FK integrity guarantee  
+- Fraud label preservation  
+- Audit-trail metadata  
+- Deduplication  
+- Metrics logging  
+
+---
+
+## 2. Bronze vs Silver Providers
+
+| Area | Bronze Issues | Silver Solution |
+|------|---------------|-----------------|
+| **Provider Coverage** | Claims ref providers NOT in Bronze | Union of Bronze + claims-derived |
+| **FK Guarantee** | Claims → Providers = 0% match | 100% referential integrity |
+| **Schema** | Inconsistent types | Enforced schema (ID, Fraud_Flag) |
+| **Fraud Labels** | Only partial labels | Original labels preserved + defaults |
+| **Label Lineage** | No audit trail | Fraud_Label_Source field added |
+| **Duplicates** | Possible | Deduplicated by Provider_ID |
+| **Quarantine** | N/A | Invalid IDs isolated |
+
+**Result:** Complete provider dimension enabling provider-level fraud, cost, and performance analytics.
+
+---
+
+## 3. Transformations: Bronze → Silver
+
+### Read Bronze Providers & Claims
+
+- Bronze Providers: ~5K rows (Kaggle fraud dataset)  
+- Bronze Claims: Contains 5000+ unique Provider_IDs  
+- **Problem:** Claims providers ≠ Bronze providers (data mismatch)  
+
+### Union: Bronze + Claims-Derived
+
+```python
+# Step 1: Get provider IDs from Bronze
+bronze_providers = read_bronze("providers")
+
+# Step 2: Extract unique providers from claims
+claims_provider_ids = distinct(
+    read_bronze("claims").select("Provider_ID")
+)
+
+# Step 3: Union — treat claims as system of record
+all_providers = bronze_providers.union(claims_provider_ids)
+```
+
+**Result:** Includes both original Bronze providers AND any provider appearing in claims.
+
+### Schema Enforcement
+
+Cast columns to enterprise schema:
+```
+Provider_ID (string),
+Fraud_Flag (int, 0/1),
+Fraud_Label_Source (string)
+```
+
+### PK Validation
+
+`Provider_ID` must not be NULL → otherwise quarantined.
+
+### Deduplication
+
+Keep unique Provider_IDs:
+```
+drop_dupes_keep_latest(["Provider_ID"])
+```
+
+### Fraud Label Logic
+
+For each provider:
+- **If in Bronze Providers:** Keep original `Fraud_Flag` (0 or 1)  
+- **If only in Claims:** Set `Fraud_Flag = 0` (no fraud evidence)  
+- **Add field:** `Fraud_Label_Source` ∈ {`bronze_label`, `inferred_from_claims`}  
+
+**Business rationale:** Absence of fraud evidence ≠ fraud, so default is safe (0).
+
+### Write to Silver
+
+- **Delta path:** `silverdata/providers`  
+- **Table:** `health_silver.providers`  
+- **Schema-aware overwrite** ensures stability  
+
+### Metrics Logging
+
+Tracked in `silverdata/_metrics`:
+- `rowcount_providers_silver`  
+- `distinct_provider_ids`  
+- `fraud_label_coverage_%`  
+- `label_source_distribution` (bronze vs claims)  
+
+---
+
+## 4. New Silver Features
+
+| Feature | Type | Purpose | Example |
+|---------|------|---------|---------|
+| **Fraud_Label_Source** | string | Origin of fraud label | bronze_label, inferred_from_claims |
+| **Fraud_Flag** | int | 0 = clean, 1 = risky | 0, 1 |
+
+**Key insight:** These fields enable:
+- 📊 Provider-level fraud analytics  
+- 🔍 Explainable fraud scoring  
+- 📈 Provider performance dashboards  
+- 🎯 Network quality & risk management  
+
+---
+
+## 5. The FK Fix: Claims → Providers
+
+### The Problem (Bronze)
+
+| Metric | Value |
+|--------|-------|
+| Claims with valid Provider_FK | 0% ❌ |
+| Orphan claims (no provider match) | 100% ❌ |
+| Business impact | Cannot do provider analytics |
+
+### The Solution (Silver)
+
+| Metric | Value |
+|--------|-------|
+| Claims with valid Provider_FK | 100% ✅ |
+| Orphan claims | 0% ✅ |
+| Business impact | Provider analytics now reliable |
+
+### How It Works
+
+1. Extract all unique Provider_IDs from Bronze Claims  
+2. Add them to the Silver Providers table  
+3. Mark them with `Fraud_Label_Source = "inferred_from_claims"`  
+4. Result: Every claim now has a matching provider in Silver  
+
+**Business value:**
+- ✅ Enables Claims → Providers joins in dashboards  
+- ✅ Allows provider-level fraud scoring  
+- ✅ Supports provider performance analysis  
+- ✅ Powers provider risk segmentation  
+
+---
+
+## 6. Architecture Diagram
+
+```
+┌─────────────────────────────────┐
+│     Bronze Layer (rawdata)       │
+│                                  │
+│  bronze.providers    bronze.claims
+│  • 5K rows           • 50K+ claims
+│  • Some fraud labels • 5K+ unique
+│  • Incomplete        │  Provider_IDs
+│                      │
+└──────────┬───────────┴────────────┘
+           │
+           │  Union providers from both sources
+           │  Extract Provider_IDs from claims
+           │  Validate schema
+           │  Add Fraud_Label_Source
+           │  Deduplicate
+           ▼
+┌─────────────────────────────────┐
+│    Silver Layer (silverdata)     │
+│    health_silver.providers         │
+│                                  │
+│  • 5K+ distinct Provider_IDs     │
+│  • Fraud_Flag (0/1)              │
+│  • Fraud_Label_Source metadata   │
+│  • 100% FK coverage to claims    │
+│  • Deduplicated                  │
+└──────────┬──────────────────────┘
+           │
+      ┌────┴────┬──────────────┐
+      ▼         ▼              ▼
+  _quarantine _metrics  Dashboards & ML
+ (bad IDs)  (observability)
+      │         │              │
+      └─────────┼──────────────┘
+                │
+                ▼
+      Provider-Level Analytics
+      Fraud Detection & Risk
+      Performance & Cost Analysis
+```
+
+---
+
+## 7. Interview Explanation
+
+> "The Providers Silver layer fixes a critical referential integrity issue: Bronze claims reference providers that don't exist in Bronze providers. I unify two sources—the Bronze provider dimension and all unique providers appearing in claims—to create a complete, validated provider dimension. I preserve original fraud labels from Kaggle, default unknown providers to fraud_flag=0 (no evidence of fraud), and add a Fraud_Label_Source field for auditability. The result is a single source of truth for providers with 100% FK coverage to claims, enabling provider-level fraud analytics, cost analysis, and network quality reporting."
+
+### Key Talking Points
+- ✅ Unioned Bronze providers + claims-derived providers  
+- ✅ Solved 100% FK mismatch (0% → 100% coverage)  
+- ✅ Preserved original fraud labels  
+- ✅ Added audit lineage via Fraud_Label_Source  
+- ✅ Deduplicated by Provider_ID  
+- ✅ Schema enforced  
+- ✅ Metrics logged for observability  
+- ✅ Enables provider analytics & risk scoring  
+
+---
+
+**Last Updated:** December 2025 | **Status:** Production | **Owner:** Data Engineering

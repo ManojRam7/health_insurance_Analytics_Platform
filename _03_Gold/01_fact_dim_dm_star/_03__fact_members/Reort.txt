@@ -1,0 +1,307 @@
+# 👥 Gold `fact_members` Layer – Architecture & Business Report
+
+## Table of Contents
+
+1. [Context & Objective](#1-context--objective)  
+2. [Silver vs Gold fact_members](#2-silver-vs-gold-fact_members)  
+3. [Transformations: Silver → Gold](#3-transformations-silver--gold)  
+4. [New Gold Features](#4-new-gold-features)  
+5. [Risk Segmentation Strategy](#5-risk-segmentation-strategy)  
+6. [Architecture Diagram](#6-architecture-diagram)  
+7. [Interview Explanation](#7-interview-explanation)  
+
+---
+
+## 1. Context & Objective
+
+The Gold `fact_members` layer transforms **clean Silver member records** into a **risk-segmented analytics-ready dimension** that:
+
+- 👤 Creates a single, trusted member view  
+- ✅ Adds actuarial risk segmentation  
+- 📊 Enables health & claims prediction  
+- 🎯 Powers customer targeting & pricing  
+- 🔒 Maintains transparent data quality  
+
+**Enterprise standards applied:**
+- Risk segmentation (age, BMI, chronic disease)  
+- Health indicators & employment grouping  
+- Geographic segmentation  
+- DQ flag carryover  
+- Schema enforcement  
+- Metrics logging  
+
+---
+
+## 2. Silver vs Gold fact_members
+
+| Area | Silver Members | Gold fact_members |
+|------|----------------|-------------------|
+| **Core Attributes** | Raw demographics | Plus risk bands & segments |
+| **Age** | Raw value (0–150) | Age_Band (18–29, 30–44, 45–59, 60+) |
+| **BMI** | Raw value | BMI_Band (Underweight, Normal, Overweight, Obese) |
+| **Health** | Raw chronic disease text | Chronic_Flag (0/1) + Chronic_Group (Diabetes, etc.) |
+| **Smoking** | Smoker_Flag (0/1) | Smoker_Status (Smoker / Non-Smoker) |
+| **Employment** | Raw text variants | Employment_Group (Employed, Student, Retired, Other) |
+| **Geography** | Raw region code | Region_Group (Region 1–100, 101–200, etc.) |
+| **DQ Flags** | dq_age_valid, dq_bmi_valid | Same flags inherited |
+| **BI Readiness** | Intermediate | Full (segments pre-computed) |
+| **Segmentation** | Limited | Rich (risk-based) |
+
+**Result:** Risk-segmented member dimension trusted for actuarial & ML.
+
+---
+
+## 3. Transformations: Silver → Gold
+
+### 3.1 Read & Enforce Schema
+
+Cast member columns to enterprise schema:
+```
+Member_ID, Policy_ID, First_Name, Last_Name,
+Age, Gender, BMI, Smoker_Flag,
+Chronic_Disease, Employment_Status, Region,
+dq_age_valid, dq_bmi_valid
+```
+
+### 3.2 Age Segmentation
+
+Bucket into 4 actuary-friendly bands:
+```python
+Age_Band = CASE
+  WHEN Age < 30 THEN "18–29"
+  WHEN Age < 45 THEN "30–44"
+  WHEN Age < 60 THEN "45–59"
+  ELSE "60+"
+END
+```
+
+**Business value:**
+- 📊 Age-based pricing tiers  
+- 💰 Risk stratification  
+- 🏥 Health claims correlation  
+
+### 3.3 BMI Segmentation
+
+Classify into WHO-standard bands:
+```python
+BMI_Band = CASE
+  WHEN BMI < 18.5 THEN "Underweight"
+  WHEN BMI < 25 THEN "Normal"
+  WHEN BMI < 30 THEN "Overweight"
+  ELSE "Obese"
+END
+```
+
+**Business value:**
+- 🚨 Health risk indicator  
+- 📈 Claims frequency predictor  
+- 🏥 Actuarial pricing input  
+
+### 3.4 Smoker Status Labeling
+
+Convert flag to human-readable status:
+```python
+Smoker_Status = CASE
+  WHEN Smoker_Flag = 1 THEN "Smoker"
+  ELSE "Non-Smoker"
+END
+```
+
+**Business value:**
+- 💼 Risk segmentation  
+- 💰 Premium differentiation  
+- 🔍 Health behavior indicator  
+
+### 3.5 Chronic Disease Grouping
+
+Create two fields: flag + category:
+```python
+Chronic_Flag = CASE WHEN Chronic_Disease IS NOT NULL THEN 1 ELSE 0 END
+
+Chronic_Group = CASE
+  WHEN Chronic_Disease LIKE '%Diabetes%' THEN "Diabetes"
+  WHEN Chronic_Disease LIKE '%Hypertension%' THEN "Hypertension"
+  WHEN Chronic_Disease LIKE '%Asthma%' THEN "Asthma"
+  ELSE "Other"
+END
+```
+
+**Business value:**
+- 🏥 Disease-specific risk scoring  
+- 📈 Claims prediction  
+- 🎯 Targeted health programs  
+
+### 3.6 Employment & Region Grouping
+
+Standardize employment & geography:
+```python
+Employment_Group = CASE
+  WHEN Employment_Status = 'Employed' THEN "Employed"
+  WHEN Employment_Status = 'Student' THEN "Student"
+  WHEN Employment_Status = 'Retired' THEN "Retired"
+  ELSE "Other"
+END
+
+Region_Group = CASE
+  WHEN Region BETWEEN 1 AND 100 THEN "Region 1–100"
+  WHEN Region BETWEEN 101 AND 200 THEN "Region 101–200"
+  ELSE "Region 200+"
+END
+```
+
+**Business value:**
+- 📍 Geographic risk variation  
+- 💼 Socioeconomic segmentation  
+- 🎯 Regional targeting  
+
+### 3.7 DQ Flag Carryover
+
+Preserve Silver DQ signals:
+- `dq_age_valid` (age plausibility: 0–150)  
+- `dq_bmi_valid` (BMI plausibility: 10–60)  
+
+**Business value:**
+- 🔍 Dashboard filtering capability  
+- 📋 Quality transparency  
+- ✅ Governance  
+
+### 3.8 Write to Gold
+
+- **Delta path:** `silverdata/gold/fact_members`  
+- **Table:** `health_gold.fact_members`  
+- **Schema-aware overwrite** ensures stability  
+
+---
+
+## 4. New Gold Features
+
+| Feature | Type | Purpose | Example |
+|---------|------|---------|---------|
+| **Age_Band** | string | Age segmentation | 18–29, 60+ |
+| **BMI_Band** | string | Health risk band | Normal, Obese |
+| **Smoker_Status** | string | Smoking label | Smoker, Non-Smoker |
+| **Chronic_Flag** | int | Chronic disease presence | 0 or 1 |
+| **Chronic_Group** | string | Disease category | Diabetes, Hypertension |
+| **Employment_Group** | string | Employment status | Employed, Student, Retired |
+| **Region_Group** | string | Geographic bucket | Region 1–100, 101–200 |
+
+**Key insight:** Gold pre-computes risk segments for instant member insights.
+
+---
+
+## 5. Risk Segmentation Strategy
+
+### Why Segmentation Matters
+
+Insurance is fundamentally about **risk assessment**. Gold member segmentation enables:
+
+| Use Case | Segments Used |
+|----------|---------------|
+| **Pricing & Underwriting** | Age, BMI, Smoker, Chronic, Region |
+| **Churn Prediction** | Age, Employment, Region |
+| **Claims Modeling** | Age, BMI, Smoker, Chronic, Region |
+| **Customer Targeting** | Age, Employment, Chronic, Region |
+| **Health Programs** | Chronic_Group, Age, BMI |
+
+### Segmentation Hierarchy
+
+```
+Member
+  ├─ Demographics (Age_Band, Gender)
+  ├─ Health (BMI_Band, Smoker_Status, Chronic_Flag, Chronic_Group)
+  ├─ Socioeconomic (Employment_Group)
+  └─ Geographic (Region_Group)
+```
+
+Each dimension powers different analytical use cases.
+
+### Age Band Risk Profile
+
+| Band | Risk Level | Claims Pattern | Typical Actions |
+|------|-----------|-----------------|-----------------|
+| **18–29** | Low | Preventive care | Wellness programs |
+| **30–44** | Low-Medium | Acute events | Accident prevention |
+| **45–59** | Medium | Chronic onset | Health screening |
+| **60+** | High | Multiple chronic | Specialized coverage |
+
+### BMI Risk Profile
+
+| Band | Risk Level | Health Condition | Policy Impact |
+|------|-----------|-----------------|---------------|
+| **Underweight** | Low | Malnutrition risk | Standard rates |
+| **Normal** | Low | Optimal | Standard rates |
+| **Overweight** | Medium | Metabolic risk | +10–15% premium |
+| **Obese** | High | Multiple conditions | +20–30% premium |
+
+### Chronic Disease Impact
+
+| Disease Group | Prevalence | Claims Cost | Intervention |
+|---------------|-----------|------------|--------------|
+| **Diabetes** | High | Very High | Monitoring program |
+| **Hypertension** | High | High | Medication adherence |
+| **Asthma** | Medium | Medium | Preventive inhalers |
+| **Other** | Variable | Variable | Case-by-case |
+
+---
+
+## 6. Architecture Diagram
+
+```
+┌──────────────────────────────────┐
+│   Silver Layer (silverdata)       │
+│   members Table                  │
+│   • Schema enforced              │
+│   • Demographics validated       │
+│   • Contact standardized         │
+│   • Address cleaned              │
+│   • 2 DQ flags                   │
+└────────┬──────────────────────────┘
+         │
+         │  Age → Age_Band
+         │  BMI → BMI_Band
+         │  Smoker_Flag → Smoker_Status
+         │  Chronic_Disease → Chronic_Flag + Chronic_Group
+         │  Employment → Employment_Group
+         │  Region → Region_Group
+         │  Carry DQ flags
+         ▼
+┌──────────────────────────────────┐
+│   Gold Layer (silverdata/gold)    │
+│   health_gold.fact_members          │
+│                                  │
+│   • Risk segments                │
+│   • Health indicators            │
+│   • Demographic bands            │
+│   • Geographic grouping          │
+│   • DQ flags inherited           │
+└────────┬──────────────────────────┘
+         │
+    ┌────┴──────────┬──────────┐
+    ▼               ▼          ▼
+Dashboards      BI Tools    ML Models
+(member         (targeting) (churn,
+ analytics)                  risk,
+                              claims)
+```
+
+---
+
+## 7. Interview Explanation
+
+> "The Gold `fact_members` table is the analytics-ready view of all members. Silver ensures data is clean and validated at the demographic level. Gold adds risk segmentation: age bands, BMI classification, smoker/non-smoker status, chronic disease flagging and grouping, employment classification, and regional grouping. These segments directly support actuarial pricing, churn prediction, claims modeling, and customer targeting. The result is a trusted, BI-ready member dimension with transparent data quality that enables 360° customer risk analytics without requiring additional transformation. Every actuarial decision, pricing model, and targeting campaign can self-serve from this foundation."
+
+### Key Talking Points
+- ✅ One row per member  
+- ✅ Pre-computed risk segments (age, BMI, health)  
+- ✅ Smoker/Non-Smoker status  
+- ✅ Chronic disease flag + grouping  
+- ✅ Employment & geographic grouping  
+- ✅ DQ flags inherited for transparency  
+- ✅ Actuarial & ML ready  
+- ✅ 360° customer analytics foundation  
+- ✅ Powers pricing, underwriting, churn prediction  
+- ✅ Single source of truth for member risk  
+
+---
+
+**Last Updated:** December 2025 | **Status:** Production | **Owner:** Data Engineering

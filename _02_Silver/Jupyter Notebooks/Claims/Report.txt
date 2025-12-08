@@ -1,0 +1,248 @@
+# 📋 Claims Silver Layer – Architecture & Business Report
+
+## Table of Contents
+
+1. [Context & Objective](#1-context--objective)  
+2. [Bronze vs Silver Claims](#2-bronze-vs-silver-claims)  
+3. [Transformations: Bronze → Silver](#3-transformations-bronze--silver)  
+4. [New Silver Features](#4-new-silver-features)  
+5. [Data Quality & Quarantine](#5-data-quality--quarantine)  
+6. [Architecture Diagram](#6-architecture-diagram)  
+7. [Interview Explanation](#7-interview-explanation)  
+
+---
+
+## 1. Context & Objective
+
+The Claims Silver layer transforms **raw, messy claim records** from disparate Kaggle sources into a **clean, validated, analysis-ready dataset** that:
+
+- 📊 Enforces enterprise data standards  
+- ✅ Validates claim integrity  
+- 🔗 Links claims to valid providers  
+- 📈 Adds operational KPIs  
+- 🔒 Includes transparent data quality flags  
+
+**Enterprise standards applied:**
+- Schema enforcement  
+- Primary key validation  
+- Provider foreign key validation  
+- Date consistency checks  
+- Financial sanity rules  
+- Deduplication (latest record wins)  
+- Feature engineering (Days_To_Settle)  
+- Data quality flags  
+- Quarantine-first approach  
+- Metrics logging  
+
+---
+
+## 2. Bronze vs Silver Claims
+
+| Area | Bronze Issues | Silver Solution |
+|------|---------------|-----------------|
+| **Schema** | Raw CSV types | Enforced enterprise schema |
+| **PK (Claim_ID)** | Unvalidated | Strictly validated, duplicates removed |
+| **Provider FK** | 7% missing; mismatches | 100% validated & matched |
+| **Member_Key FK** | Different source systems | Tracked (soft join, logged) |
+| **Dates** | Nulls, reversed order | Fixed, validated, Days_To_Settle derived |
+| **Money Fields** | Unvalidated amounts | Checked for sanity (non-negative) |
+| **DQ Signals** | None | dq_money_valid, dq_date_valid flags |
+| **KPIs** | None | Days_To_Settle (SLA metric) |
+| **Quarantine** | N/A | Invalid/FK-failed records isolated |
+
+**Result:** Clean, governance-ready Claims dataset trusted for KPIs, fraud analytics, SLAs.
+
+---
+
+## 3. Transformations: Bronze → Silver
+
+### Read & Enforce Schema
+
+Cast columns to enterprise schema:
+```
+Claim_ID, Provider_ID, Member_Key,
+Date_Reported, Date_Settled,
+Payout_GBP, Claim_Amount_GBP,
+Fraud_Label, Claim_Type, Claim_Status
+```
+
+### PK Validation
+
+`Claim_ID` must not be NULL → otherwise quarantined.
+
+### Deduplication
+
+Keep latest record per `Claim_ID`:
+```
+drop_dupes_keep_latest(["Claim_ID"], ["Date_Settled"])
+```
+
+### Provider FK Validation
+
+- Check: `Provider_ID` exists in Silver Providers  
+- ~7% of Bronze claims have missing or invalid Provider_IDs  
+- **Handling:** Quarantine with violation code `FK_PROVIDER_INVALID`  
+- **Business impact:** Ensures no orphan claims in dashboards  
+
+### Member_Key Soft FK
+
+- Member_Key comes from different Kaggle dataset  
+- Different semantic meaning than Members dimension  
+- **Handling:** Logged but NOT enforced (no quarantine)  
+- **Business impact:** Tracks lineage; enables future master-data reconciliation  
+
+### Date Validation & Repair
+
+**Check rules:**
+- Date_Reported must be non-NULL  
+- Date_Settled >= Date_Reported (no reversals)  
+- Months between reported and settled <= 24 (sanity check)
+
+**Flag:** `dq_date_valid` (1 = valid, 0 = suspicious)
+
+### Money Validation
+
+**Check rules:**
+- Payout_GBP >= 0  
+- Claim_Amount_GBP >= 0  
+- Payout_GBP <= Claim_Amount_GBP (can't pay more than claimed)
+
+**Flag:** `dq_money_valid` (1 = valid, 0 = suspicious)
+
+### Feature Engineering
+
+#### Days_To_Settle
+```python
+Days_To_Settle = datediff(Date_Settled, Date_Reported)
+# NULL if dates missing/invalid
+```
+**Business value:**
+- Operational SLA tracking  
+- Customer experience metric  
+- Identifies slow-settling claims  
+
+### Write to Silver
+
+- **Delta path:** `silverdata/claims`  
+- **Table:** `health_silver.claims`  
+- **Schema-aware overwrite** ensures stability  
+
+### Metrics Logging
+
+Tracked in `silverdata/_metrics`:
+- `rowcount_claims_silver`  
+- `distinct_claim_ids`  
+- `fk_provider_violations`  
+- `dq_date_valid_coverage %`  
+- `dq_money_valid_coverage %`  
+
+---
+
+## 4. New Silver Features
+
+| Feature | Type | Purpose | Example |
+|---------|------|---------|---------|
+| **Days_To_Settle** | int | Days from report to settlement | 7, 45, NULL |
+| **dq_money_valid** | int | Money amounts are sane | 1 or 0 |
+| **dq_date_valid** | int | Dates are valid & ordered | 1 or 0 |
+
+**Key insight:** These fields are **added by Silver**, not in Bronze. They enable:
+- 📊 SLA reporting & monitoring  
+- 🔍 Transparent data quality  
+- 🚨 Early detection of bad claims  
+
+---
+
+## 5. Data Quality & Quarantine
+
+### Quarantine Strategy
+
+No bad data is silently dropped. Invalid rows are captured with:
+- Violation code (PK_NULL, FK_PROVIDER_INVALID, DATE_INVALID, etc.)  
+- Timestamp  
+- Full record  
+
+**Location:** `silverdata/_quarantine/claims/<violation_type>`
+
+### DQ Expectations
+
+Hard rules (quarantine on failure):
+- `Claim_ID` not NULL  
+- `Provider_ID` matches Silver Providers (FK valid)  
+
+Soft rules (flag but include):
+- `dq_date_valid`, `dq_money_valid`  
+
+This allows:
+- Filtering in dashboards: "only DQ-clean rows"  
+- Monitoring quality trends  
+- Transparent governance  
+
+---
+
+## 6. Architecture Diagram
+
+```
+┌──────────────────────────────────┐
+│   Bronze Layer (rawdata)          │
+│   bronze.claims                   │
+│   • Raw types                     │
+│   • Missing providers (7%)        │
+│   • Bad dates                     │
+│   • No KPIs                       │
+│   • No DQ tracking                │
+└────────────┬──────────────────────┘
+             │
+             │  Schema enforcement
+             │  PK validation
+             │  Provider FK check
+             │  Date validation
+             │  Money validation
+             │  Days_To_Settle calc
+             │  Add DQ flags
+             ▼
+┌──────────────────────────────────┐
+│   Silver Layer (silverdata)       │
+│   health_silver.claims              │
+│   • Enterprise schema             │
+│   • Deduplicated                  │
+│   • 100% valid Provider FK        │
+│   • Validated dates & money       │
+│   • Days_To_Settle KPI            │
+│   • dq_money_valid flag           │
+│   • dq_date_valid flag            │
+└────────────┬──────────────────────┘
+             │
+      ┌──────┴──────┬──────────────┐
+      ▼             ▼              ▼
+  _quarantine  _metrics      Dashboards
+ (bad claims)  (observability)  (BI tools)
+      │             │              │
+      └─────────────┼──────────────┘
+                    │
+                    ▼
+         Claims KPI & SLA Reporting
+        Fraud Detection Pipeline
+         Provider Performance Analysis
+```
+
+---
+
+## 7. Interview Explanation
+
+> "The Claims Silver layer transforms raw claim records from Kaggle sources into a trusted, analysis-ready dataset. I enforce strict schema, validate primary keys, ensure provider referential integrity, fix and validate dates, check financial sanity, and add the critical Days_To_Settle KPI. I use transparent data quality flags so downstream users can confidently filter data and understand data health. All invalid records are quarantined with audit codes, never silently dropped. The result is a clean, governance-ready Claims dataset that powers KPI reporting, SLA monitoring, and fraud analytics."
+
+### Key Talking Points
+- ✅ Enforced enterprise schema  
+- ✅ PK validation (Claim_ID)  
+- ✅ Provider FK validation (7% quarantined)  
+- ✅ Date validation & repair  
+- ✅ Money field validation  
+- ✅ Days_To_Settle KPI (SLA metric)  
+- ✅ 2 DQ flags (date, money)  
+- ✅ Quarantine + metrics for governance  
+- ✅ 100% claim-provider referential integrity  
+
+---
+
+**Last Updated:** December 2025 | **Status:** Production | **Owner:** Data Engineering
