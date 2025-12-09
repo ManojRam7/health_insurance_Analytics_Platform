@@ -16,6 +16,7 @@ def build_paths(storage_account):
 
     CONTAINER_BRONZE = "rawdata"
     CONTAINER_SILVER = "silverdata"
+    CONTAINER_GOLD   = "golddata"
 
     paths_bronze = {
         "policies":  f"abfss://{CONTAINER_BRONZE}@{storage_account}.dfs.core.windows.net/policies",
@@ -33,6 +34,7 @@ def build_paths(storage_account):
         "providers": f"abfss://{CONTAINER_SILVER}@{storage_account}.dfs.core.windows.net/providers",
         "_quarantine": f"abfss://{CONTAINER_SILVER}@{storage_account}.dfs.core.windows.net/_quarantine",
         "_metrics":    f"abfss://{CONTAINER_SILVER}@{storage_account}.dfs.core.windows.net/_metrics",
+        
 
         # keep base
         "_reference": reference_base,
@@ -41,8 +43,14 @@ def build_paths(storage_account):
         "_ref_dim_channel": f"{reference_base}/dim_channel",
         "_ref_dim_product_line": f"{reference_base}/dim_product_line"
     }
+    
+    paths_gold = {
+        "fact_members":   f"abfss://{CONTAINER_GOLD}@{storage_account}.dfs.core.windows.net/fact_members",
+        "fact_claims":    f"abfss://{CONTAINER_GOLD}@{storage_account}.dfs.core.windows.net/fact_claims",
+    }
+    
 
-    return paths_bronze, paths_silver
+    return paths_bronze, paths_silver, paths_gold
 
 
 # ------------------------------------------------
@@ -262,7 +270,7 @@ def write_metric(spark, name: str, value, context: str, paths_silver: dict):
     )
 
     print(f"[METRIC] {name}={value} ctx={context}")
-
+    
 
 
 print("✅ utils_silver.py loaded")
