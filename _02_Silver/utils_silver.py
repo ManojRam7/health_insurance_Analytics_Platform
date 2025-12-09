@@ -47,6 +47,8 @@ def build_paths(storage_account):
     paths_gold = {
         "fact_members":   f"abfss://{CONTAINER_GOLD}@{storage_account}.dfs.core.windows.net/fact_members",
         "fact_claims":    f"abfss://{CONTAINER_GOLD}@{storage_account}.dfs.core.windows.net/fact_claims",
+                # 🔍 NEW: central DQ monitoring snapshot table
+        "dq_monitoring": f"abfss://{CONTAINER_GOLD}@{storage_account}.dfs.core.windows.net/dq_monitoring",
     }
     
 
@@ -270,6 +272,75 @@ def write_metric(spark, name: str, value, context: str, paths_silver: dict):
     )
 
     print(f"[METRIC] {name}={value} ctx={context}")
+    
+    # ==========================================================
+# 9) DATA QUALITY SNAPSHOT (Gold DQ monitoring)
+# ==========================================================
+
+from typing import List, Dict
+
+def write_dq_snapshot(
+    spark,
+    snapshot_rows: List[Dict],
+    paths_gold: dict
+):
+    """
+    Append a batch of DQ metrics into the central dq_monitoring Delta table.
+
+    snapshot_rows: list of dicts with keys:
+        run_id         : str
+        layer          : str    ("bronze" / "silver" / "gold" / "ml")
+        table_name     : str
+        row_count      : int
+        key_nulls      : int
+        dq_bad_rows    : int
+        notes          : str
+    """
+    if not snapshot_rows:
+        print("[DQ] No rows to write.")
+        return
+
+    dq_schema = (
+        "run_id STRING, "
+        "run_ts TIMESTAMP, "
+        "layer STRING, "
+        "table_name STRING, "
+        "row_count LONG, "
+        "key_nulls LONG, "
+        "dq_bad_rows LONG, "
+        "notes STRING"
+    )
+
+    from datetime import datetime
+
+    # Attach a run_ts to each row
+    run_ts = datetime.utcnow()
+    enriched = []
+    for r in snapshot_rows:
+        enriched.append(
+            (
+                r.get("run_id"),
+                run_ts,
+                r.get("layer"),
+                r.get("table_name"),
+                int(r.get("row_count", 0)),
+                int(r.get("key_nulls", 0)),
+                int(r.get("dq_bad_rows", 0)),
+                r.get("notes", "")
+            )
+        )
+
+    dq_df = spark.createDataFrame(enriched, dq_schema)
+
+    (
+        dq_df.write
+        .format("delta")
+        .mode("append")
+        .save(paths_gold["dq_monitoring"])
+    )
+
+    print(f"[DQ] Wrote {dq_df.count()} rows into dq_monitoring ({paths_gold['dq_monitoring']})")
+
     
 
 

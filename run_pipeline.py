@@ -233,6 +233,18 @@ NOTEBOOKS = [
         / "04_BI_Dashboards" 
         / "01_dashboard_views.ipynb",
     ),
+    # 10. Data Quality monitoring 
+    (
+        
+       "DQ Monitoring – central snapshot",
+       PROJECT_ROOT
+       / "_03_Gold"
+       / "05_DQ_Monitoring"
+       / "01_dq_monitoring.ipynb",
+    
+    ),
+    
+    
 ]
 
 # -----------------------------------------------------------------------------
