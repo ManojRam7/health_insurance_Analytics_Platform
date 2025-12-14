@@ -47,8 +47,11 @@ def build_paths(storage_account):
     paths_gold = {
         "fact_members":   f"abfss://{CONTAINER_GOLD}@{storage_account}.dfs.core.windows.net/fact_members",
         "fact_claims":    f"abfss://{CONTAINER_GOLD}@{storage_account}.dfs.core.windows.net/fact_claims",
-                # 🔍 NEW: central DQ monitoring snapshot table
+        # 🔍 NEW: central DQ monitoring snapshot table
         "dq_monitoring": f"abfss://{CONTAINER_GOLD}@{storage_account}.dfs.core.windows.net/dq_monitoring",
+        # 🔁 NEW: central ML monitoring table
+        "ml_monitoring": f"abfss://{CONTAINER_GOLD}@{storage_account}.dfs.core.windows.net/ml_monitoring",
+         "ml_monitoring_view": f"abfss://{CONTAINER_GOLD}@{storage_account}.dfs.core.windows.net/ml_monitoring_view",
     }
     
 
@@ -340,6 +343,153 @@ def write_dq_snapshot(
     )
 
     print(f"[DQ] Wrote {dq_df.count()} rows into dq_monitoring ({paths_gold['dq_monitoring']})")
+    
+    
+    
+    # ==========================================================
+# 10) ML MONITORING SNAPSHOT
+# ==========================================================
+
+def write_ml_monitoring(
+    spark,
+    rows,
+    paths_gold: dict,
+):
+    """
+    Append ML training / scoring metrics into a central Delta table.
+
+    rows: list of dicts with keys:
+        model_name       : str  (e.g. 'LogisticRegression')
+        use_case         : str  (e.g. 'policy_churn', 'claim_fraud')
+        dataset_name     : str  (e.g. 'ft_policy_churn', 'ft_claims_risk')
+        dataset_split    : str  ('train' / 'test' / 'validation')
+        auc              : float
+        accuracy         : float
+        precision        : float
+        recall           : float
+        f1               : float
+        notes            : str  (optional)
+    """
+    from datetime import datetime
+
+    if not rows:
+        print("[ML_MON] No rows to write.")
+        return
+
+    schema = """
+        run_ts TIMESTAMP,
+        model_name STRING,
+        use_case STRING,
+        dataset_name STRING,
+        dataset_split STRING,
+        auc DOUBLE,
+        accuracy DOUBLE,
+        precision DOUBLE,
+        recall DOUBLE,
+        f1 DOUBLE,
+        notes STRING
+    """
+
+    run_ts = datetime.utcnow()
+    values = []
+    for r in rows:
+        values.append((
+            run_ts,
+            r.get("model_name"),
+            r.get("use_case"),
+            r.get("dataset_name"),
+            r.get("dataset_split", "test"),
+            float(r.get("auc", 0.0)),
+            float(r.get("accuracy", 0.0)),
+            float(r.get("precision", 0.0)),
+            float(r.get("recall", 0.0)),
+            float(r.get("f1", 0.0)),
+            r.get("notes", ""),
+        ))
+
+    df = spark.createDataFrame(values, schema)
+
+    (
+        df.write
+          .format("delta")
+          .mode("append")
+          .save(paths_gold["ml_monitoring"])
+    )
+
+    print(f"[ML_MON] Wrote {df.count()} rows to {paths_gold['ml_monitoring']}")
+    
+    
+    # 10) ML MONITORING SNAPSHOT
+# ==========================================================
+
+def write_ml_monitoring_view(
+    spark,
+    rows,
+    paths_gold: dict,
+):
+    """
+    Append ML training / scoring metrics into a central Delta table.
+
+    rows: list of dicts with keys:
+        model_name       : str  (e.g. 'LogisticRegression')
+        use_case         : str  (e.g. 'policy_churn', 'claim_fraud')
+        dataset_name     : str  (e.g. 'ft_policy_churn', 'ft_claims_risk')
+        dataset_split    : str  ('train' / 'test' / 'validation')
+        auc              : float
+        accuracy         : float
+        precision        : float
+        recall           : float
+        f1               : float
+        notes            : str  (optional)
+    """
+    from datetime import datetime
+
+    if not rows:
+        print("[ML_MON] No rows to write.")
+        return
+
+    schema = """
+        run_ts TIMESTAMP,
+        model_name STRING,
+        use_case STRING,
+        dataset_name STRING,
+        dataset_split STRING,
+        auc DOUBLE,
+        accuracy DOUBLE,
+        precision DOUBLE,
+        recall DOUBLE,
+        f1 DOUBLE,
+        notes STRING
+    """
+
+    run_ts = datetime.utcnow()
+    values = []
+    for r in rows:
+        values.append((
+            run_ts,
+            r.get("model_name"),
+            r.get("use_case"),
+            r.get("dataset_name"),
+            r.get("dataset_split", "test"),
+            float(r.get("auc", 0.0)),
+            float(r.get("accuracy", 0.0)),
+            float(r.get("precision", 0.0)),
+            float(r.get("recall", 0.0)),
+            float(r.get("f1", 0.0)),
+            r.get("notes", ""),
+        ))
+
+    df = spark.createDataFrame(values, schema)
+
+    (
+        df.write
+          .format("delta")
+          .mode("append")
+          .save(paths_gold["ml_monitoring_view"])
+    )
+
+    print(f"[ML_MON] Wrote {df.count()} rows to {paths_gold['ml_monitoring_view']}")
+
 
     
 

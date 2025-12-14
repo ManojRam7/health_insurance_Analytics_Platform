@@ -1,0 +1,27 @@
+name: health_insurance_ml
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+      # Core Spark / Delta (adjust versions to match your local ones if needed)
+      - pyspark==3.5.0
+      - delta-spark==3.1.0
+
+      # Data / ML stack
+      - pandas
+      - numpy
+      - scikit-learn
+      - pyarrow
+      - matplotlib
+
+      # MLflow
+      - mlflow[extras]==2.16.0
+      - protobuf==4.25.3
+
+      # Jupyter + VS Code support
+      - ipykernel
+      - jupyterlab

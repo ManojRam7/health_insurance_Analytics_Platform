@@ -224,6 +224,39 @@ NOTEBOOKS = [
         / "02_claims_risk_prediction"  
         / "02_Is_high_cost_model.ipynb",
     ),
+    
+    (
+        "ML – high-cost claims model",
+        PROJECT_ROOT
+        / "_03_Gold" 
+        / "03_batch_scoring" 
+        / "01_score_policy_churn.ipynb",
+    ),
+    
+    (
+        "ML – high-cost claims model",
+        PROJECT_ROOT
+        / "_03_Gold" 
+        / "03_batch_scoring" 
+        / "02_score_claim_fraud.ipynb",
+    ),
+    
+    (
+        "ML – high-cost claims model",
+        PROJECT_ROOT
+        / "_03_Gold" 
+        / "03_batch_scoring" 
+        / "03_ml_monitoring_overview.ipynb",
+    ),
+    
+    (
+        "ML – high-cost claims model",
+        PROJECT_ROOT
+        / "_03_Gold" 
+        / "03_ML_Model_Training" 
+        / "04_ml_monitoring"
+        / "01_ml_monitoring_overview.ipynb",
+    ),
 
     # 9. Dashboards (SQL / views)
     (
@@ -453,3 +486,16 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     main(from_index=args.from_index)
+    
+    
+
+import subprocess
+from pathlib import Path
+
+PROJECT_ROOT = Path("/Users/manojrammopati/Public/Projects/health_insurance_project")
+REGISTER_SCRIPT = PROJECT_ROOT / "scripts" / "register_models.py"
+
+# ... after running all notebooks successfully:
+print("\n✅ All notebooks completed. Registering models...")
+subprocess.check_call(["python", str(REGISTER_SCRIPT)])
+print("✅ Model registration step completed.")
