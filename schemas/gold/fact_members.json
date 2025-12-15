@@ -1,0 +1,110 @@
+[
+  {
+    "metadata": {},
+    "name": "Member_ID",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Policy_ID",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Age",
+    "nullable": true,
+    "type": "integer"
+  },
+  {
+    "metadata": {},
+    "name": "Gender",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "BMI",
+    "nullable": true,
+    "type": "double"
+  },
+  {
+    "metadata": {},
+    "name": "Smoker_Flag",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Chronic_Disease",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Employment_Status",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Region",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Age_Band",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "BMI_Band",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Smoker_Status",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Chronic_Flag",
+    "nullable": true,
+    "type": "integer"
+  },
+  {
+    "metadata": {},
+    "name": "Chronic_Group",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Employment_Group",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Region_Group",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "dq_age_valid",
+    "nullable": true,
+    "type": "integer"
+  },
+  {
+    "metadata": {},
+    "name": "dq_bmi_valid",
+    "nullable": true,
+    "type": "integer"
+  }
+]

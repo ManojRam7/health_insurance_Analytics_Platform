@@ -1,0 +1,128 @@
+[
+  {
+    "metadata": {},
+    "name": "Policy_ID",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Customer_ID",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Product_Line_Code",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Product_Line_Name",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Channel_Code",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Channel_Name",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Sum_Insured_GBP",
+    "nullable": true,
+    "type": "double"
+  },
+  {
+    "metadata": {},
+    "name": "Annual_Premium_GBP",
+    "nullable": true,
+    "type": "double"
+  },
+  {
+    "metadata": {},
+    "name": "Policy_Start_Date",
+    "nullable": true,
+    "type": "date"
+  },
+  {
+    "metadata": {},
+    "name": "Policy_End_Date",
+    "nullable": true,
+    "type": "date"
+  },
+  {
+    "metadata": {},
+    "name": "Policy_Duration_Days",
+    "nullable": true,
+    "type": "integer"
+  },
+  {
+    "metadata": {},
+    "name": "Renewal_Offered_Flag",
+    "nullable": true,
+    "type": "integer"
+  },
+  {
+    "metadata": {},
+    "name": "Renewal_Accepted_Flag",
+    "nullable": true,
+    "type": "integer"
+  },
+  {
+    "metadata": {},
+    "name": "Renewal_Conversion",
+    "nullable": true,
+    "type": "integer"
+  },
+  {
+    "metadata": {},
+    "name": "Tenure_Band",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Premium_Band",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Discount_Band",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Renewal_Outcome",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "dq_money_valid",
+    "nullable": true,
+    "type": "integer"
+  },
+  {
+    "metadata": {},
+    "name": "dq_discount_valid",
+    "nullable": true,
+    "type": "integer"
+  },
+  {
+    "metadata": {},
+    "name": "dq_renewal_valid",
+    "nullable": true,
+    "type": "integer"
+  }
+]

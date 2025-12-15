@@ -1,0 +1,85 @@
+[
+  {
+    "metadata": {},
+    "name": "Claim_ID",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Member_Key",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Provider_ID",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Is_Fraudulent_Claim",
+    "nullable": true,
+    "type": "integer"
+  },
+  {
+    "metadata": {},
+    "name": "fraud_prob",
+    "nullable": true,
+    "type": "double"
+  },
+  {
+    "metadata": {
+      "ml_attr": {
+        "num_vals": 2,
+        "type": "nominal"
+      }
+    },
+    "name": "prediction",
+    "nullable": true,
+    "type": "double"
+  },
+  {
+    "metadata": {},
+    "name": "Claim_Type_Name",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Claim_Status",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Claim_Amount_GBP",
+    "nullable": true,
+    "type": "double"
+  },
+  {
+    "metadata": {},
+    "name": "Payout_GBP",
+    "nullable": true,
+    "type": "double"
+  },
+  {
+    "metadata": {},
+    "name": "Payout_to_Amount_Ratio",
+    "nullable": true,
+    "type": "double"
+  },
+  {
+    "metadata": {},
+    "name": "Provider_Risk_Tier",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "dataset_split",
+    "nullable": true,
+    "type": "string"
+  }
+]

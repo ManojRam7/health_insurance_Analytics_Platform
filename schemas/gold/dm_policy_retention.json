@@ -1,0 +1,62 @@
+[
+  {
+    "metadata": {},
+    "name": "Product_Line",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Channel",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Tenure_Band",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Policy_Start_Year",
+    "nullable": true,
+    "type": "integer"
+  },
+  {
+    "metadata": {},
+    "name": "Policy_Count",
+    "nullable": true,
+    "type": "long"
+  },
+  {
+    "metadata": {},
+    "name": "Total_Premium_GBP",
+    "nullable": true,
+    "type": "double"
+  },
+  {
+    "metadata": {},
+    "name": "Avg_Premium_GBP",
+    "nullable": true,
+    "type": "double"
+  },
+  {
+    "metadata": {},
+    "name": "Offer_Rate",
+    "nullable": true,
+    "type": "double"
+  },
+  {
+    "metadata": {},
+    "name": "Acceptance_Rate",
+    "nullable": true,
+    "type": "double"
+  },
+  {
+    "metadata": {},
+    "name": "Clean_Renewal_Conversion",
+    "nullable": true,
+    "type": "double"
+  }
+]

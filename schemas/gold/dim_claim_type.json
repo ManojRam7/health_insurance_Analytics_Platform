@@ -1,0 +1,14 @@
+[
+  {
+    "metadata": {},
+    "name": "Claim_Type_Code",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Claim_Type",
+    "nullable": true,
+    "type": "string"
+  }
+]

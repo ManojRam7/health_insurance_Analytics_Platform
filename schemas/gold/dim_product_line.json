@@ -1,0 +1,14 @@
+[
+  {
+    "metadata": {},
+    "name": "Product_Line_Code",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Product_Line",
+    "nullable": true,
+    "type": "string"
+  }
+]

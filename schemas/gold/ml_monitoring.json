@@ -1,0 +1,68 @@
+[
+  {
+    "metadata": {},
+    "name": "run_ts",
+    "nullable": true,
+    "type": "timestamp"
+  },
+  {
+    "metadata": {},
+    "name": "model_name",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "use_case",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "dataset_name",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "dataset_split",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "auc",
+    "nullable": true,
+    "type": "double"
+  },
+  {
+    "metadata": {},
+    "name": "accuracy",
+    "nullable": true,
+    "type": "double"
+  },
+  {
+    "metadata": {},
+    "name": "precision",
+    "nullable": true,
+    "type": "double"
+  },
+  {
+    "metadata": {},
+    "name": "recall",
+    "nullable": true,
+    "type": "double"
+  },
+  {
+    "metadata": {},
+    "name": "f1",
+    "nullable": true,
+    "type": "double"
+  },
+  {
+    "metadata": {},
+    "name": "notes",
+    "nullable": true,
+    "type": "string"
+  }
+]

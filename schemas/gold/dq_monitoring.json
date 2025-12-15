@@ -1,0 +1,50 @@
+[
+  {
+    "metadata": {},
+    "name": "run_id",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "run_ts",
+    "nullable": true,
+    "type": "timestamp"
+  },
+  {
+    "metadata": {},
+    "name": "layer",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "table_name",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "row_count",
+    "nullable": true,
+    "type": "long"
+  },
+  {
+    "metadata": {},
+    "name": "key_nulls",
+    "nullable": true,
+    "type": "long"
+  },
+  {
+    "metadata": {},
+    "name": "dq_bad_rows",
+    "nullable": true,
+    "type": "long"
+  },
+  {
+    "metadata": {},
+    "name": "notes",
+    "nullable": true,
+    "type": "string"
+  }
+]

@@ -1,0 +1,14 @@
+[
+  {
+    "metadata": {},
+    "name": "Channel_Code",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Channel_Name",
+    "nullable": true,
+    "type": "string"
+  }
+]

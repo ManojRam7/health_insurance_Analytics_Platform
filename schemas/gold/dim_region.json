@@ -1,0 +1,20 @@
+[
+  {
+    "metadata": {},
+    "name": "Region",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Region_Code",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Region_Label",
+    "nullable": true,
+    "type": "string"
+  }
+]

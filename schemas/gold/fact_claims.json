@@ -1,0 +1,98 @@
+[
+  {
+    "metadata": {},
+    "name": "Claim_ID",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Provider_ID",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Member_Key",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Date_Reported",
+    "nullable": true,
+    "type": "date"
+  },
+  {
+    "metadata": {},
+    "name": "Date_Settled",
+    "nullable": true,
+    "type": "date"
+  },
+  {
+    "metadata": {},
+    "name": "Payout_GBP",
+    "nullable": true,
+    "type": "double"
+  },
+  {
+    "metadata": {},
+    "name": "Claim_Amount_GBP",
+    "nullable": true,
+    "type": "double"
+  },
+  {
+    "metadata": {},
+    "name": "Fraud_Label",
+    "nullable": true,
+    "type": "integer"
+  },
+  {
+    "metadata": {},
+    "name": "Claim_Type",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Claim_Status",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Provider_Fraud_Flag",
+    "nullable": true,
+    "type": "integer"
+  },
+  {
+    "metadata": {},
+    "name": "Days_To_Settle",
+    "nullable": true,
+    "type": "integer"
+  },
+  {
+    "metadata": {},
+    "name": "Payout_to_Amount_Ratio",
+    "nullable": true,
+    "type": "double"
+  },
+  {
+    "metadata": {},
+    "name": "High_Cost_Claim_Flag",
+    "nullable": true,
+    "type": "integer"
+  },
+  {
+    "metadata": {},
+    "name": "dq_money_valid",
+    "nullable": true,
+    "type": "integer"
+  },
+  {
+    "metadata": {},
+    "name": "dq_date_valid",
+    "nullable": true,
+    "type": "integer"
+  }
+]

@@ -1,5 +1,9 @@
-import pytest
+import os
 from pyspark.sql import functions as F
+
+import pytest
+pytestmark = pytest.mark.integration
+
 
 DB = "health_gold"
 TBL = f"{DB}.fact_claims"
@@ -23,23 +27,25 @@ REQUIRED_COLS = [
     "dq_date_valid",
 ]
 
-def test_fact_claims_required_columns(spark):
-    df = spark.table(TBL)
+
+
+def test_fact_claims_required_columns(spark, gold_paths):
+    df = spark.read.format("delta").load(gold_paths["fact_claims"])
     missing = [c for c in REQUIRED_COLS if c not in df.columns]
     assert not missing, f"fact_claims missing columns: {missing}"
 
-def test_fact_claims_pk_not_null(spark):
-    df = spark.table(TBL)
+def test_fact_claims_pk_not_null(spark, gold_paths):
+    df = spark.read.format("delta").load(gold_paths["fact_claims"])
     assert df.filter(F.col("Claim_ID").isNull()).count() == 0
 
-def test_fact_claims_pk_unique(spark):
-    df = spark.table(TBL)
+def test_fact_claims_pk_unique(spark, gold_paths):
+    df = spark.read.format("delta").load(gold_paths["fact_claims"])
     total = df.count()
     distinct_ids = df.select("Claim_ID").distinct().count()
     assert total == distinct_ids, f"Claim_ID not unique: total={total}, distinct={distinct_ids}"
 
-def test_fact_claims_dq_flags_binary(spark):
-    df = spark.table(TBL)
+def test_fact_claims_dq_flags_binary(spark, gold_paths):
+    df = spark.read.format("delta").load(gold_paths["fact_claims"])
     bad_money = df.filter(~F.col("dq_money_valid").isin(0, 1) | F.col("dq_money_valid").isNull()).count()
     bad_date  = df.filter(~F.col("dq_date_valid").isin(0, 1) | F.col("dq_date_valid").isNull()).count()
     assert bad_money == 0, f"dq_money_valid has invalid values: {bad_money}"

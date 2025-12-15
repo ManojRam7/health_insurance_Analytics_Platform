@@ -1,0 +1,26 @@
+[
+  {
+    "metadata": {},
+    "name": "Provider_ID",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Fraud_Flag",
+    "nullable": true,
+    "type": "integer"
+  },
+  {
+    "metadata": {},
+    "name": "Fraud_Label_Source",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Provider_Risk_Tier",
+    "nullable": true,
+    "type": "string"
+  }
+]

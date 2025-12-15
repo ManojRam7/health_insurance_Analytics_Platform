@@ -66,3 +66,16 @@ logs/
 tmp/
 temp/
 *.tmp
+
+
+data/gold/
+spark-warehouse/
+mlruns/
+.pytest_cache/
+__pycache__/
+
+
+
+
+
+

@@ -1,5 +1,9 @@
-import pytest
 from pyspark.sql import functions as F
+
+import pytest
+pytestmark = pytest.mark.integration
+
+
 
 DB = "health_gold"
 TBL = f"{DB}.star_policies"
@@ -28,23 +32,25 @@ REQUIRED_COLS = [
     "dq_renewal_valid",
 ]
 
-def test_star_policies_required_columns(spark):
-    df = spark.table(TBL)
+
+
+def test_star_policies_required_columns(spark, gold_paths):
+    df = spark.read.format("delta").load(gold_paths["star_policies"])
     missing = [c for c in REQUIRED_COLS if c not in df.columns]
     assert not missing, f"star_policies missing columns: {missing}"
 
-def test_star_policies_policy_id_not_null(spark):
-    df = spark.table(TBL)
+def test_star_policies_policy_id_not_null(spark, gold_paths):
+    df = spark.read.format("delta").load(gold_paths["star_policies"])
     assert df.filter(F.col("Policy_ID").isNull()).count() == 0
 
-def test_star_policies_policy_id_unique(spark):
-    df = spark.table(TBL)
+def test_star_policies_policy_id_unique(spark, gold_paths):
+    df = spark.read.format("delta").load(gold_paths["star_policies"])
     total = df.count()
     distinct_ids = df.select("Policy_ID").distinct().count()
     assert total == distinct_ids, f"Policy_ID not unique: total={total}, distinct={distinct_ids}"
 
-def test_star_policies_dq_flags_binary(spark):
-    df = spark.table(TBL)
+def test_star_policies_dq_flags_binary(spark, gold_paths):
+    df = spark.read.format("delta").load(gold_paths["star_policies"])
     for c in ["dq_money_valid", "dq_discount_valid", "dq_renewal_valid"]:
         bad = df.filter(~F.col(c).isin(0, 1) | F.col(c).isNull()).count()
         assert bad == 0, f"{c} has invalid values: {bad}"

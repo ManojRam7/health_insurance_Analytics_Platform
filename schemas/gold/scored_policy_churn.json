@@ -1,0 +1,55 @@
+[
+  {
+    "metadata": {},
+    "name": "Policy_ID",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Customer_ID",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Product_Line",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Channel",
+    "nullable": true,
+    "type": "string"
+  },
+  {
+    "metadata": {},
+    "name": "Policy_Start_Date",
+    "nullable": true,
+    "type": "date"
+  },
+  {
+    "metadata": {},
+    "name": "Policy_End_Date",
+    "nullable": true,
+    "type": "date"
+  },
+  {
+    "metadata": {},
+    "name": "churn_prob",
+    "nullable": true,
+    "type": "double"
+  },
+  {
+    "metadata": {
+      "ml_attr": {
+        "num_vals": 2,
+        "type": "nominal"
+      }
+    },
+    "name": "churn_prediction",
+    "nullable": true,
+    "type": "double"
+  }
+]

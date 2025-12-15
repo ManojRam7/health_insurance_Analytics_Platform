@@ -1,10 +1,5 @@
-import os
 import pytest
-from pyspark.sql import SparkSession
 
-@pytest.fixture(scope="session")
-def spark():
-    # If you already configure spark in notebooks, keep it simple here.
-    # You can also pass env vars for warehouse/metastore if needed.
-    spark = SparkSession.builder.getOrCreate()
-    return spark
+def pytest_configure(config):
+    config.addinivalue_line("markers", "unit: fast tests with no Spark")
+    config.addinivalue_line("markers", "integration: Spark/Delta integration tests")
