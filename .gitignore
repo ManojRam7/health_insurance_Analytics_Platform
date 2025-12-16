@@ -1,3 +1,7 @@
+# ============================================================================
+# Health Insurance Project - .gitignore
+# ============================================================================
+
 # VS Code workspace files
 *.code-workspace
 .vscode/
@@ -18,6 +22,7 @@ __pycache__/
 env/
 venv/
 ENV/
+.venv
 build/
 develop-eggs/
 dist/
@@ -33,26 +38,28 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
 
 # Jupyter Notebook
 .ipynb_checkpoints/
 */.ipynb_checkpoints/
 
-# IDEs
+# IDEs & Editors
 .idea/
-*.swp
-*.swo
-*~
 .project
 .pydevproject
 .settings/
 *.sublime-project
 *.sublime-workspace
 
-# Environment variables
+# Environment variables & Secrets
 .env
 .env.local
 .env.*.local
+secrets/
+*.key
+*.pem
+.credentials/
 
 # OS
 Thumbs.db
@@ -62,17 +69,43 @@ Thumbs.db
 *.log
 logs/
 
-# Temporary files
+# Temporary & Cache files
 tmp/
 temp/
 *.tmp
+.cache/
+.hypothesis/
+.coverage
+htmlcov/
 
+# ============================================================================
+# Project specific
+# ============================================================================
 
+# Data folders (local development - use gold_sample for CI/CD)
 data/gold/
+data/exports/
+DataBase/
+
+# Spark & Delta
 spark-warehouse/
+*.metastore_db/
+metastore_db/
+
+# MLflow
 mlruns/
+.mlflow/
+.mlflow_venv/
+
+# Testing
 .pytest_cache/
-__pycache__/
+.tox/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
 
 
 
