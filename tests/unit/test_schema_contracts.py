@@ -4,8 +4,7 @@ import pytest
 pytestmark = pytest.mark.unit
 
 SCHEMA_DIR = Path("schemas/gold")
-GOLD_DIR   = Path("data/gold")
-
+GOLD_SAMPLE_DIR = Path("data/gold_sample")  # Use gold_sample (committed to repo)
 
 REQUIRED_TABLES = {
     "fact_claims": ["Claim_ID","Provider_ID","Member_Key","Claim_Amount_GBP","Payout_GBP","Fraud_Label","dq_money_valid","dq_date_valid"],
@@ -22,7 +21,8 @@ def load_schema(name: str) -> set[str]:
     return {c["name"] for c in json.loads(path.read_text())}
 
 def test_every_gold_folder_has_schema_snapshot():
-    assert GOLD_DIR.exists(), "data/gold not found (did you create local delta folders?)"
-    folders = sorted([p.name for p in GOLD_DIR.iterdir() if p.is_dir()])
+    """Check that all gold_sample folders have corresponding schema snapshots."""
+    assert GOLD_SAMPLE_DIR.exists(), f"Missing {GOLD_SAMPLE_DIR} (should be committed to repo)"
+    folders = sorted([p.name for p in GOLD_SAMPLE_DIR.iterdir() if p.is_dir() and not p.name.startswith(".")])
     missing = [f for f in folders if not (SCHEMA_DIR / f"{f}.json").exists()]
     assert not missing, f"Missing schema snapshots for: {missing}"
