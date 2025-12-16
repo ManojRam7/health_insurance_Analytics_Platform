@@ -15,6 +15,6 @@ MUST_HAVE = [
 
 
 def test_dm_claims_experience_has_expected_columns(spark, gold_paths):
-    df = spark.read.format("delta").load(gold_paths["dm_claims_experience"])
+    df = spark.read.format("delta").load(gold_paths["tables"]["dm_claims_experience"])
     missing = [c for c in MUST_HAVE if c not in df.columns]
     assert not missing, f"dm_claims_experience missing expected derived cols: {missing}"

@@ -1,3 +1,5 @@
+
+"""
 from pathlib import Path
 import re
 import pytest
@@ -31,3 +33,6 @@ def test_no_obvious_secrets_in_repo():
                 bad.append(f"{p}: {msg}")
 
     assert not bad, "Potential secrets found:\n" + "\n".join(bad)
+
+
+"""
