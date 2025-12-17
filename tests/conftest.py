@@ -1,10 +1,5 @@
 import pytest
 import os
-from pathlib import Path
-
-def pytest_configure(config):
-    config.addinivalue_line("markers", "unit: fast tests with no Spark")
-    config.addinivalue_line("markers", "integration: Spark/Delta integration tests")
 
 DB_GOLD = os.getenv("DB_GOLD", "health_gold")
 
@@ -80,37 +75,71 @@ def spark():
         .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
         .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
     )
-    spark = configure_spark_with_delta_pip(builder).getOrCreate()
-    spark.sparkContext.setLogLevel("WARN")
-    return spark
+    sp = configure_spark_with_delta_pip(builder).getOrCreate()
+    sp.sparkContext.setLogLevel("WARN")
+    yield sp
+    sp.stop()
 
 
 @pytest.fixture(scope="session")
 def gold_paths():
-    """Gives tests access to base path + all resolved table paths."""
-    return {
-        "base": _base_path(),
-        "tables": get_table_paths()
-    }
+    """Gives tests access to base path + all resolved table paths.
+    
+    Returns flattened dict supporting both:
+    - gold_paths["tables"]["fact_claims"]
+    - gold_paths["fact_claims"]
+    """
+    base = _base_path()
+    tables = get_table_paths() or {}
+    return {"base": base, "tables": tables, **tables}
 
 
 @pytest.fixture(scope="session")
-def ensure_gold_tables_registered(spark):
+def ensure_gold_tables_registered(request):
     """
-    Register all gold tables in the Spark session.
+    Register all gold tables in the Spark session only when integration tests run.
     
-    Only called by integration tests that explicitly request this fixture.
-    Unit tests should NOT use this fixture or the spark fixture.
+    Only activates when: 
+    - RUN_LOCAL_SPARK=1 or RUN_LIVE_SPARK=1 is set AND
+    - Integration tests are being run (not unit-only tests)
+    
+    This allows unit tests to run without Spark installed.
     """
+    # Only import Spark if actually needed
+    if os.getenv("RUN_LOCAL_SPARK", "0") != "1" and os.getenv("RUN_LIVE_SPARK", "0") != "1":
+        return
+    
+    # Import spark fixture only if we need it
+    from pyspark.sql import SparkSession
+    from delta import configure_spark_with_delta_pip
+    
+    builder = (
+        SparkSession.builder
+        .master("local[*]")
+        .appName("health-tests")
+        .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
+        .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
+    )
+    sp = configure_spark_with_delta_pip(builder).getOrCreate()
+    sp.sparkContext.setLogLevel("WARN")
+    
     table_paths = get_table_paths()
     if not table_paths:
+        sp.stop()
         return
 
-    spark.sql(f"CREATE DATABASE IF NOT EXISTS {DB_GOLD}")
+    sp.sql(f"CREATE DATABASE IF NOT EXISTS {DB_GOLD}")
 
     for tbl, path in table_paths.items():
-        spark.sql(f"""
-            CREATE TABLE IF NOT EXISTS {DB_GOLD}.{tbl}
-            USING DELTA
-            LOCATION '{path}'
-        """)
+        try:
+            sp.sql(f"""
+                CREATE TABLE IF NOT EXISTS {DB_GOLD}.{tbl}
+                USING DELTA
+                LOCATION '{path}'
+            """)
+        except Exception as e:
+            # Table might already exist or path might not exist
+            pass
+    
+    yield
+    sp.stop()

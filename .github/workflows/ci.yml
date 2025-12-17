@@ -9,13 +9,16 @@ on:
       - main
   workflow_dispatch:  # Allow manual trigger from GitHub UI
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true  # Cancel previous runs if new push happens
 
 jobs:
   unit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10  # Fail if takes more than 10 min
     steps:
       - uses: actions/checkout@v4
@@ -33,10 +36,20 @@ jobs:
 
       - name: Run unit tests
         run: |
-          pytest -q tests/unit -m unit --tb=short
+          pytest -v tests/unit -m unit \
+            --tb=short \
+            --junit-xml=test-results/unit-results.xml
+
+      - name: Upload unit test results
+        if: always()  # Upload even if tests fail
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: test-results/unit-results.xml
+          retention-days: 30
 
   integration_local_sample:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: unit
     timeout-minutes: 15  # Fail if takes more than 15 min
     steps:
@@ -48,6 +61,11 @@ jobs:
           python-version: "3.10"
           cache: 'pip'  # Cache pip dependencies
 
+      - name: Verify gold_sample data exists
+        run: |
+          test -d data/gold_sample/fact_claims || (echo "gold_sample/fact_claims not found" && exit 1)
+          echo "✅ gold_sample verified"
+
       - name: Install Spark + Delta + pytest
         run: |
           python -m pip install --upgrade pip
@@ -58,4 +76,14 @@ jobs:
           RUN_LOCAL_SPARK: "1"
           LOCAL_GOLD_BASE: "data/gold_sample"
         run: |
-          pytest -q tests/integration -m integration --tb=short
+          pytest -v tests/integration -m integration \
+            --tb=short \
+            --junit-xml=test-results/integration-results.xml
+
+      - name: Upload integration test results
+        if: always()  # Upload even if tests fail
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: test-results/integration-results.xml
+          retention-days: 30

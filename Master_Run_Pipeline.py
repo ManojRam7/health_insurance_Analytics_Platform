@@ -224,7 +224,7 @@ NOTEBOOKS = [
         / "02_claims_risk_prediction"  
         / "02_Is_high_cost_model.ipynb",
     ),
-    
+    # 9. ML batch scoring
     (
         "ML – high-cost claims model",
         PROJECT_ROOT
