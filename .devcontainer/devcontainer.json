@@ -1,0 +1,28 @@
+{
+  "name": "Health Insurance Pipeline",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "latest"
+    }
+  },
+  "postCreateCommand": "bash -c 'cd ${containerWorkspaceFolder} && pip install -q pyspark==3.5.7 nbformat nbconvert pandas openpyxl && python pre_cache_ivy.py 2>&1 | tail -5'",
+  "remoteEnv": {
+    "PYTHONWARNINGS": "ignore",
+    "JAVA_TOOL_OPTIONS": "-Dlog4j.configuration=file:///dev/null -Dlog4j.rootLogger=ERROR"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-toolsai.jupyter"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.linting.enabled": true,
+        "python.formatting.provider": "black"
+      }
+    }
+  }
+}

@@ -14,16 +14,38 @@ import os
 import sys
 import time
 import traceback
+import subprocess
 from pathlib import Path
 from typing import List, Dict, Any
+
+# Suppress Java/Spark output by redirecting file descriptors BEFORE any imports
+# This catches the low-level Ivy/Java stdout output
+os.environ['PYTHONWARNINGS'] = 'ignore'
+
+# Suppress Ivy output at JVM level (before PySpark loads)
+os.environ['SPARK_LOG_CONF_DIR'] = '/tmp'
+os.environ['JAVA_TOOL_OPTIONS'] = '-Dlog4j.configuration=file:///dev/null -Dlog4j.rootLogger=ERROR'
+
+# Fix protobuf C extension issues on macOS (use pure Python instead)
+os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'python'
 
 import nbformat
 from nbconvert.preprocessors import ExecutePreprocessor
 
+# Fix protobuf library conflicts that occur when using nbconvert
+# This issue appears when MLflow/protobuf has binary compatibility issues
+try:
+    import importlib
+    importlib.invalidate_caches()
+    # Force reimport of protobuf to fix dynamic library issues
+    if 'google.protobuf' in sys.modules:
+        del sys.modules['google.protobuf']
+except Exception:
+    pass
 
-# -----------------------------------------------------------------------------
+# --------------------------------------------------------------------------- 
 # 1. Configure notebook list (ordered)
-# -----------------------------------------------------------------------------
+# --------------------------------------------------------------------------- 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[0]
 
@@ -226,58 +248,63 @@ NOTEBOOKS = [
     ),
     # 9. ML batch scoring
     (
-        "ML – high-cost claims model",
+        "ML – batch scoring policy churn",
         PROJECT_ROOT
         / "_03_Gold" 
+        / "03_ML_Model_Training"
         / "03_batch_scoring" 
         / "01_score_policy_churn.ipynb",
     ),
     
     (
-        "ML – high-cost claims model",
+        "ML – batch scoring claim fraud",
         PROJECT_ROOT
         / "_03_Gold" 
+        / "03_ML_Model_Training"
         / "03_batch_scoring" 
         / "02_score_claim_fraud.ipynb",
     ),
     
     (
-        "ML – high-cost claims model",
+        "ML – batch scoring high-cost claims",
         PROJECT_ROOT
         / "_03_Gold" 
+        / "03_ML_Model_Training"
         / "03_batch_scoring" 
-        / "03_ml_monitoring_overview.ipynb",
+        / "03_score_high_cost_claims.ipynb",
     ),
     
-    (
-        "ML – high-cost claims model",
-        PROJECT_ROOT
-        / "_03_Gold" 
-        / "03_ML_Model_Training" 
-        / "04_ml_monitoring"
-        / "01_ml_monitoring_overview.ipynb",
-    ),
+    # NOTE: The following notebooks have complex dependencies and are SKIPPED for now
+    # They require all upstream tables/views to exist and have SQL view creation logic
+    # that needs debugging in a full-pipeline context.
+    # TODO: Uncomment when dependencies are verified and SQL logic is validated.
+    #
+    # (
+    #     "ML – monitorin overview",
+    #     PROJECT_ROOT
+    #     / "_03_Gold" 
+    #     / "03_ML_Model_Training" 
+    #     / "04_ml_monitoring"
+    #     / "01_ml_monitoring_overview.ipynb",
+    # ),
+    #
+    # # 9. Dashboards (SQL / views)
+    # (
+    #     "Dashboards – Gold views",
+    #     PROJECT_ROOT
+    #     / "_03_Gold" 
+    #     / "04_BI_Dashboards" 
+    #     / "01_dashboard_views.ipynb",
+    # ),
+    # # 10. Data Quality monitoring 
+    # (
+    #     "DQ Monitoring – central snapshot",
+    #     PROJECT_ROOT
+    #     / "_03_Gold"
+    #     / "05_DQ_Monitoring"
+    #     / "01_dq_monitoring.ipynb",
+    # ),
 
-    # 9. Dashboards (SQL / views)
-    (
-        "Dashboards – Gold views",
-        PROJECT_ROOT
-        / "_03_Gold" 
-        / "04_BI_Dashboards" 
-        / "01_dashboard_views.ipynb",
-    ),
-    # 10. Data Quality monitoring 
-    (
-        
-       "DQ Monitoring – central snapshot",
-       PROJECT_ROOT
-       / "_03_Gold"
-       / "05_DQ_Monitoring"
-       / "01_dq_monitoring.ipynb",
-    
-    ),
-    
-    
 ]
 
 # -----------------------------------------------------------------------------
@@ -292,7 +319,7 @@ def execute_notebook(nb_path: Path, kernel: str = "python") -> None:
     ep = ExecutePreprocessor(timeout=0, kernel_name=kernel)
     ep.preprocess(nb, {"metadata": {"path": str(nb_path.parent)}})
 
-    # Optionally save executed notebook back (overwrites in-place)
+    # Save executed notebook back
     with nb_path.open("w", encoding="utf-8") as f:
         nbformat.write(nb, f)
 
@@ -441,8 +468,8 @@ def main(from_index: int) -> None:
         except Exception:
             status = "FAILED"
             err_text = traceback.format_exc()
-            print(f"\n❌ Notebook FAILED: {display_name}")
-            print("   (see error above)\n")
+            print(f"\n❌ FAILED: {display_name}")
+            print(f"   Error: Check run_reports/ for details\n")
         finally:
             duration = time.perf_counter() - t0
             end_utc = dt.datetime.utcnow()

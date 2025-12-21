@@ -1,0 +1,44 @@
+name: Run Pipeline in Cloud
+
+on:
+  workflow_dispatch:
+    inputs:
+      from_index:
+        description: 'Start from notebook index'
+        required: false
+        default: '0'
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        run: |
+          pip install --quiet pyspark==3.5.7 nbformat nbconvert pandas openpyxl
+      
+      - name: Set environment variables
+        run: |
+          echo "PYTHONWARNINGS=ignore" >> $GITHUB_ENV
+          echo "JAVA_TOOL_OPTIONS=-Dlog4j.configuration=file:///dev/null -Dlog4j.rootLogger=ERROR" >> $GITHUB_ENV
+      
+      - name: Pre-cache Ivy dependencies
+        run: |
+          python pre_cache_ivy.py 2>&1 | tail -20
+      
+      - name: Run pipeline
+        run: |
+          python Master_Run_Pipeline.py --from-index ${{ github.event.inputs.from_index }} 2>/dev/null
+      
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: pipeline-logs
+          path: ./pipeline_run_*.log
