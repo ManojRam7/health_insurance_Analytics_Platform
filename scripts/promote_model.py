@@ -13,9 +13,9 @@ client = MlflowClient()
 
 CONFIG = [
     # (experiment_name, registered_model_name, artifact_path_logged_in_notebook)
-    ("health_policy_churn",      "health_policy_churn_model",   "best_policy_churn_model"),
-    ("health_fraud_claim",       "health_claims_fraud_model",   "fraud_best_model"),
-    ("health_claims_high_cost",  "health_high_cost_model",      "high_cost_best_model"),
+    ("health_policy_churn",           "health_policy_churn_model",   "best_policy_churn_model"),
+    ("health_claims_risk_fraud",      "health_claims_fraud_model",   "fraud_best_model"),
+    ("health_claims_risk_high_cost",  "health_high_cost_model",      "high_cost_best_model"),
 ]
 
 
@@ -24,14 +24,25 @@ def latest_finished_run_id(experiment_name: str) -> str:
     if exp is None:
         raise RuntimeError(f"Experiment not found: {experiment_name}")
 
+    # First try to find FINISHED runs
     df = mlflow.search_runs(
         experiment_ids=[exp.experiment_id],
         filter_string="attributes.status = 'FINISHED'",
         order_by=["attributes.start_time DESC"],
         max_results=1,
     )
+    
+    # If no FINISHED runs, get the latest run (which should be ended)
     if df is None or len(df) == 0:
-        raise RuntimeError(f"No FINISHED runs found for experiment: {experiment_name}")
+        print(f"⚠️  No FINISHED runs found, fetching latest run (may be ended)...")
+        df = mlflow.search_runs(
+            experiment_ids=[exp.experiment_id],
+            order_by=["attributes.start_time DESC"],
+            max_results=1,
+        )
+    
+    if df is None or len(df) == 0:
+        raise RuntimeError(f"No runs found for experiment: {experiment_name}")
 
     return str(df.loc[0, "run_id"])
 

@@ -503,6 +503,32 @@ def main(from_index: int) -> None:
 
 
 
+def run_e2e_tests():
+    """Run end-to-end pipeline tests after successful execution."""
+    print("\n" + "="*80)
+    print("PHASE 4: END-TO-END PIPELINE TESTING")
+    print("="*80)
+    
+    try:
+        import subprocess
+        result = subprocess.run(
+            ["python", "-m", "pytest", "tests/test_pipeline_e2e.py", "-v", "--tb=short"],
+            cwd=PROJECT_ROOT,
+            capture_output=False,
+            text=True
+        )
+        
+        if result.returncode == 0:
+            print("\n✅ All E2E tests passed!")
+            return True
+        else:
+            print("\n❌ Some E2E tests failed. Review output above.")
+            return False
+    except Exception as e:
+        print(f"\n⚠️  Could not run E2E tests: {e}")
+        return False
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -511,18 +537,40 @@ if __name__ == "__main__":
         default=0,
         help="Start running notebooks from this index (0-based).",
     )
+    parser.add_argument(
+        "--skip-tests",
+        action="store_true",
+        help="Skip E2E tests after pipeline execution.",
+    )
+    parser.add_argument(
+        "--tests-only",
+        action="store_true",
+        help="Run only E2E tests (skip pipeline execution).",
+    )
     args = parser.parse_args()
-    main(from_index=args.from_index)
     
-    
-
-import subprocess
-from pathlib import Path
-
-PROJECT_ROOT = Path("/Users/manojrammopati/Public/Projects/health_insurance_project")
-REGISTER_SCRIPT = PROJECT_ROOT / "scripts" / "register_models.py"
-
-# ... after running all notebooks successfully:
-print("\n✅ All notebooks completed. Registering models...")
-subprocess.check_call(["python", str(REGISTER_SCRIPT)])
-print("✅ Model registration step completed.")
+    if args.tests_only:
+        # Run only E2E tests
+        success = run_e2e_tests()
+        sys.exit(0 if success else 1)
+    else:
+        # Run pipeline first
+        main(from_index=args.from_index)
+        
+        # Run E2E tests unless skipped
+        if not args.skip_tests:
+            run_e2e_tests()
+        
+        # Register models
+        print("\n" + "="*80)
+        print("MODEL REGISTRATION")
+        print("="*80)
+        try:
+            REGISTER_SCRIPT = PROJECT_ROOT / "scripts" / "register_models.py"
+            print("\n✅ All notebooks completed. Registering models...")
+            subprocess.check_call(["python", str(REGISTER_SCRIPT)])
+            print("✅ Model registration step completed.")
+        except FileNotFoundError:
+            print("⚠️  Model registration script not found. Skipping.")
+        except Exception as e:
+            print(f"⚠️  Model registration failed: {e}")
