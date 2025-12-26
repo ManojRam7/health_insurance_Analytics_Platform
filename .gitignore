@@ -112,3 +112,24 @@ dist/
 
 
 
+
+# MLflow artifacts (should not be tracked)
+mlruns/
+*.db
+spark-warehouse/
+
+# Spark output
+_03_Gold/**/health_gold.vw_*/**
+**/delta_log/**
+*.parquet
+*.snappy.parquet
+*.crc
+
+# Generated reports
+gcp/
+run_reports/
+
+# Python cache
+__pycache__/
+.pytest_cache/
+*.pyc
