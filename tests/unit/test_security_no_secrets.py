@@ -26,7 +26,8 @@ def test_no_obvious_secrets_in_repo():
         ".mlflow_venv", ".venv", "venv", "env",
         "node_modules", "__pycache__",
         # Notebooks often have example configs (not real secrets)
-        "_00_Pre_Pilot", "Jupyter Notebooks", "Notebooks", "Data_Collection"
+        "_00_Pre_Pilot", "Jupyter Notebooks", "Notebooks", "Data_Collection",
+        "Project_Documentation"  # Contains example configs, not real secrets
     }
 
     for p in root.rglob("*"):
