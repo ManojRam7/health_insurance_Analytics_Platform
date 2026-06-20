@@ -2,9 +2,25 @@
 # Health Insurance Project - .gitignore
 # ============================================================================
 
-# VS Code workspace files
-*.code-workspace
+# Environment & Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+.mlflow_venv/
+.env
+.env.local
+.env.*.local
+
+# IDEs & Editors
 .vscode/
+.idea/
+*.code-workspace
+*.sublime-project
+*.sublime-workspace
+.project
+.pydevproject
+.settings/
 
 # macOS system files
 .DS_Store
@@ -19,10 +35,6 @@ __pycache__/
 *$py.class
 *.so
 .Python
-env/
-venv/
-ENV/
-.venv
 build/
 develop-eggs/
 dist/
@@ -39,27 +51,23 @@ wheels/
 .installed.cfg
 *.egg
 MANIFEST
+.pytest_cache/
+.tox/
+.coverage
+htmlcov/
+.mypy_cache/
+.hypothesis/
 
 # Jupyter Notebook
 .ipynb_checkpoints/
 */.ipynb_checkpoints/
 
-# IDEs & Editors
-.idea/
-.project
-.pydevproject
-.settings/
-*.sublime-project
-*.sublime-workspace
-
-# Environment variables & Secrets
-.env
-.env.local
-.env.*.local
+# Secrets & Credentials
 secrets/
 *.key
 *.pem
 .credentials/
+credentials.json
 
 # OS
 Thumbs.db
@@ -74,9 +82,6 @@ tmp/
 temp/
 *.tmp
 .cache/
-.hypothesis/
-.coverage
-htmlcov/
 
 # ============================================================================
 # Project specific
@@ -91,32 +96,12 @@ DataBase/
 spark-warehouse/
 *.metastore_db/
 metastore_db/
+_SUCCESS
+_temporary/
 
 # MLflow
 mlruns/
 .mlflow/
-.mlflow_venv/
-
-# Testing
-.pytest_cache/
-.tox/
-
-# Build artifacts
-build/
-dist/
-*.egg-info/
-
-
-
-
-
-
-
-
-# MLflow artifacts (should not be tracked)
-mlruns/
-*.db
-spark-warehouse/
 
 # Spark output
 _03_Gold/**/health_gold.vw_*/**
@@ -128,8 +113,9 @@ _03_Gold/**/health_gold.vw_*/**
 # Generated reports
 gcp/
 run_reports/
+test-results/
 
-# Python cache
-__pycache__/
-.pytest_cache/
-*.pyc
+# Build artifacts
+*.egg-info/
+dist/
+build/
