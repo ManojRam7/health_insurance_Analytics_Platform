@@ -1,6 +1,6 @@
 # Health Insurance ML Pipeline
 
-**Enterprise-Grade Machine Learning Platform for Healthcare Insurance Analytics**
+Enterprise-grade machine learning platform for healthcare insurance analytics with an end-to-end medallion pipeline, feature engineering, model training, and batch scoring.
 
 [![CI](https://img.shields.io/github/actions/workflow/status/ManojRam7/health_insurance_project/ci.yml?branch=main&label=CI)](https://github.com/ManojRam7/health_insurance_project/actions/workflows/ci.yml)
 [![Code Quality](https://img.shields.io/github/actions/workflow/status/ManojRam7/health_insurance_project/code-quality.yml?branch=main&label=Code%20Quality)](https://github.com/ManojRam7/health_insurance_project/actions/workflows/code-quality.yml)
@@ -10,146 +10,126 @@
 
 ---
 
-## 📚 Documentation Structure
+## What This Project Delivers
 
-This project maintains a **concise, centralized documentation** system. Start here:
+- Processes 62,000+ records through Bronze, Silver, and Gold data layers
+- Trains and evaluates 3 core ML models for insurance decision support
+- Produces batch predictions for churn risk, fraud risk, and high-cost claims
+- Tracks quality and performance with repeatable, documented workflows
 
-### 🎯 Essential Reading (Start Here)
+### Core Business Outcomes
 
-| Document | Purpose | Read Time |
-|----------|---------|-----------|
-| [`PROJECT_OVERVIEW.md`](./Project_Documentation/PROJECT_OVERVIEW.md) | Complete project guide with architecture, setup, and operations | 15 min |
-| [`QUICK_REFERENCE.md`](./QUICK_REFERENCE.md) | Quick lookup: commands, decisions, scoring | 3 min |
-| [`Architecture/ARCHITECTURE.md`](./Project_Documentation/Architecture/ARCHITECTURE.md) | Technical architecture, data flow, design patterns | 10 min |
+1. Policy churn prediction for proactive retention
+2. Claim fraud detection for investigation prioritization
+3. High-cost claim prediction for early intervention
 
-### 🚀 Getting Started
+---
 
-| Document | Purpose | Read Time |
-|----------|---------|-----------|
-| `PROJECT_DOCUMENTATION/PROJECT_OVERVIEW.md` → "Getting Started" section | Step-by-step setup | 5 min |
-| `DEPLOYMENT_ROADMAP.md` | GCP deployment & release schedule | 8 min |
-| `_03_Gold/Gold_layer_documentation.md` | Gold-layer outputs and analytics context | 8 min |
+## Architecture At A Glance
 
-### 🔍 Deep Dives
+1. Bronze layer: raw ingestion and schema-preserving storage
+2. Silver layer: cleansing, validation, standardization, and feature-ready transforms
+3. Gold layer: facts, dimensions, marts, star schemas, and ML-ready datasets
+4. ML layer: training, evaluation, versioned artifacts, and scoring outputs
 
-| Topic | Document | Purpose |
-|-------|----------|---------|
-| **Production Monitoring** | `Project_Documentation/Phase_4_Documentation/README_PRODUCTION.md` | Real-time ML monitoring, alerts, SLAs |
-| **ML Model Details** | `Project_Documentation/ML_TESTS_SUMMARY/ML_TESTS_QUICK_REFERENCE.md` | Model specs, performance, features |
-| **Gold Data Layer** | `_03_Gold/Gold_layer_documentation.md` | Gold marts, dimensions, and fact tables |
+For full technical architecture, see:
+- [Project_Documentation/Architecture/ARCHITECTURE.md](./Project_Documentation/Architecture/ARCHITECTURE.md)
+- [Project_Documentation/PROJECT_OVERVIEW.md](./Project_Documentation/PROJECT_OVERVIEW.md)
 
-### 🏗️ Folder Structure
+---
 
-```
+## Repository Map
+
+```text
 health_insurance_project/
-├── README.md                          ← You are here
-├── PROJECT_DOCUMENTATION/             ← Core documentation
-│   ├── PROJECT_OVERVIEW.md            ✅ START HERE
-│   ├── Architecture/ARCHITECTURE.md
-│   ├── Phase_4_Documentation/         ✅ Production guide
-│   └── ML_TESTS_SUMMARY/              ✅ Model specs
-├── _00_Pre_Pilot/                     ✅ Data generation
-├── _01_Bronze/                        ✅ Raw data ingestion
-├── _02_Silver/                        ✅ Data transformation
-├── _03_Gold/                          ✅ Analytics & ML
-├── config/                            ✅ Pipeline configuration
-├── src/                               ✅ Production utilities
-├── tests/                             ✅ 127 unit tests
-└── scripts/                           ✅ Operational scripts
+├── Master_Run_Pipeline.py
+├── config/
+├── src/
+├── tests/
+├── _00_Pre_Pilot/
+├── _01_Bronze/
+├── _02_Silver/
+├── _03_Gold/
+├── Project_Documentation/
+└── .github/workflows/
 ```
 
 ---
 
-## ⚡ Quick Access
+## Quick Start
 
-### Most Common Tasks
-
-| Task | File | Command |
-|------|------|---------|
-| Run full pipeline | `PROJECT_OVERVIEW.md` → Getting Started | `python Master_Run_Pipeline.py` |
-| Check model performance | `ML_TESTS_SUMMARY/ML_TESTS_QUICK_REFERENCE.md` | Review metrics |
-| Deploy to GCP | `DEPLOYMENT_ROADMAP.md` → Implementation | See deployment guide |
-| Run tests | `PROJECT_OVERVIEW.md` → Testing section | `pytest tests/` |
-
-### Docker Quick Start
+### Local Setup
 
 ```bash
-# Build the image
-docker build -t health-insurance-ml .
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -r requirements-dev.txt
+```
 
-# Run the pipeline in a container
+### Run The Pipeline
+
+```bash
+python Master_Run_Pipeline.py
+```
+
+### Run Tests
+
+```bash
+pytest tests/
+```
+
+---
+
+## Docker
+
+```bash
+docker build -t health-insurance-ml .
 docker run --rm health-insurance-ml
 ```
 
-Use Docker when you want a reproducible, isolated environment for pipeline execution.
-
-### Key Metrics at a Glance
-
-- ✅ **Data Volume**: 62,000+ records processed
-- ✅ **Pipeline Speed**: ~15 minutes end-to-end
-- ✅ **Data Quality**: 98.3/100 score
-- ✅ **Model Performance**: AUC 0.856-0.912
-- ✅ **Test Coverage**: 127 tests (100% pass rate)
-- ✅ **Production Ready**: 9.5/10 enterprise score
+Use Docker for reproducible local execution and CI parity.
 
 ---
 
-## 🎓 Document Purposes (NOT Duplicated)
+## CI/CD And Quality Gates
 
-### Why Each Document Exists
+- [ci.yml](./.github/workflows/ci.yml): linting + multi-version unit/integration validation
+- [code-quality.yml](./.github/workflows/code-quality.yml): security and dependency checks
+- [documentation.yml](./.github/workflows/documentation.yml): markdown and link validation
 
-1. **PROJECT_OVERVIEW.md** - Comprehensive guide (all aspects in one place)
-2. **ARCHITECTURE.md** - Technical design, data models, system interactions
-3. **QUICK_REFERENCE.md** - Speed lookup, decision trees, checklists
-4. **Phase_4_Documentation** - Production operations & real-time monitoring
-5. **ML_TESTS_SUMMARY** - Model specifications & training details
-6. **DEPLOYMENT_ROADMAP.md** - Cloud deployment & release timeline
-7. **Gold_layer_documentation.md** - Curated gold-layer documentation
-
-**Eliminated:**
-- ❌ 40+ timestamped run reports (execution logs, not docs)
-- ❌ Redundant status reports (MAIN_BRANCH, FEATURE_BRANCH folders)
-- ❌ Duplicate test summaries (consolidated to one)
-- ❌ Overlapping audit reports (kept authoritative versions)
+Issue templates are available for bug reports, feature requests, test failures, and documentation updates in [.github/ISSUE_TEMPLATE](./.github/ISSUE_TEMPLATE/).
 
 ---
 
-## 🔧 Documentation Maintenance
+## Documentation Guide
 
-### Guidelines
+Read in this order:
 
-- **Each document has ONE purpose** - no duplication
-- **PROJECT_OVERVIEW.md** is the master reference
-- **QUICK_REFERENCE.md** enables fast lookups
-- **Specialized docs** (ARCHITECTURE, Phase_4) dig deeper into specific topics
-- **All docs link to each other** for navigation
-
-### Before Adding New Docs
-
-Ask: "Does this already exist in PROJECT_OVERVIEW or QUICK_REFERENCE?"
-- If **YES** → Add a link, don't duplicate
-- If **NO** → Create it with a specific, non-overlapping purpose
+1. [Project_Documentation/PROJECT_OVERVIEW.md](./Project_Documentation/PROJECT_OVERVIEW.md) for end-to-end flow
+2. [QUICK_REFERENCE.md](./QUICK_REFERENCE.md) for deployment and decision shortcuts
+3. [Project_Documentation/Architecture/ARCHITECTURE.md](./Project_Documentation/Architecture/ARCHITECTURE.md) for technical design
+4. [Project_Documentation/Phase_4_Documentation/README_PRODUCTION.md](./Project_Documentation/Phase_4_Documentation/README_PRODUCTION.md) for production operations
+5. [Project_Documentation/ML_TESTS_SUMMARY/ML_TESTS_QUICK_REFERENCE.md](./Project_Documentation/ML_TESTS_SUMMARY/ML_TESTS_QUICK_REFERENCE.md) for ML/testing quick details
+6. [_03_Gold/Gold_layer_documentation.md](./_03_Gold/Gold_layer_documentation.md) for Gold-layer outputs
+7. [DEPLOYMENT_ROADMAP.md](./DEPLOYMENT_ROADMAP.md) for cloud rollout planning
 
 ---
 
-## 🚀 Next Steps
+## Operational Notes
 
-1. **New to the project?** → Read [`PROJECT_OVERVIEW.md`](./Project_Documentation/PROJECT_OVERVIEW.md)
-2. **Need quick info?** → Check [`QUICK_REFERENCE.md`](./QUICK_REFERENCE.md)
-3. **Deploying to GCP?** → Follow [`DEPLOYMENT_ROADMAP.md`](./DEPLOYMENT_ROADMAP.md)
-4. **Production operations?** → See [`Phase_4_Documentation`](./Project_Documentation/Phase_4_Documentation/)
-5. **Gold data model details?** → Review [`Gold_layer_documentation.md`](./_03_Gold/Gold_layer_documentation.md)
+- The project is optimized for batch ML workflows with versioned outputs.
+- Current roadmap focus areas include orchestration automation and real-time serving extensions.
+- Documentation is intentionally curated to avoid duplication.
 
 ---
 
-## 📞 Support
+## Support
 
-For issues or questions:
-- Check `PROJECT_OVERVIEW.md` → Troubleshooting section
-- Review `Phase_4_Documentation` → Operations guide
-- Run tests locally with `pytest tests/`
+- Open an issue using templates in [.github/ISSUE_TEMPLATE](./.github/ISSUE_TEMPLATE/)
+- Review contributing standards in [CONTRIBUTING.md](./CONTRIBUTING.md)
 
 ---
 
-**Last Updated**: January 19, 2026  
-**Status**: ✅ Production Ready (Streamlined Documentation)
+**Last Updated**: June 20, 2026  
+**Status**: ✅ Production Ready (Curated End-to-End Documentation)
