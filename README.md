@@ -2,6 +2,12 @@
 
 **Enterprise-Grade Machine Learning Platform for Healthcare Insurance Analytics**
 
+[![CI](https://img.shields.io/github/actions/workflow/status/ManojRam7/health_insurance_project/ci.yml?branch=main&label=CI)](https://github.com/ManojRam7/health_insurance_project/actions/workflows/ci.yml)
+[![Code Quality](https://img.shields.io/github/actions/workflow/status/ManojRam7/health_insurance_project/code-quality.yml?branch=main&label=Code%20Quality)](https://github.com/ManojRam7/health_insurance_project/actions/workflows/code-quality.yml)
+[![Docs](https://img.shields.io/github/actions/workflow/status/ManojRam7/health_insurance_project/documentation.yml?branch=main&label=Docs)](https://github.com/ManojRam7/health_insurance_project/actions/workflows/documentation.yml)
+[![Python](https://img.shields.io/badge/Python-3.9%20|%203.10%20|%203.11-blue)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 ---
 
 ## 📚 Documentation Structure
@@ -22,7 +28,7 @@ This project maintains a **concise, centralized documentation** system. Start he
 |----------|---------|-----------|
 | `PROJECT_DOCUMENTATION/PROJECT_OVERVIEW.md` → "Getting Started" section | Step-by-step setup | 5 min |
 | `DEPLOYMENT_ROADMAP.md` | GCP deployment & release schedule | 8 min |
-| `gcp/README_GCP_SETUP.md` | Cloud infrastructure setup | 10 min |
+| `_03_Gold/Gold_layer_documentation.md` | Gold-layer outputs and analytics context | 8 min |
 
 ### 🔍 Deep Dives
 
@@ -30,8 +36,7 @@ This project maintains a **concise, centralized documentation** system. Start he
 |-------|----------|---------|
 | **Production Monitoring** | `Project_Documentation/Phase_4_Documentation/README_PRODUCTION.md` | Real-time ML monitoring, alerts, SLAs |
 | **ML Model Details** | `Project_Documentation/ML_TESTS_SUMMARY/ML_TESTS_QUICK_REFERENCE.md` | Model specs, performance, features |
-| **Testing Strategy** | `test-results/TEST_RESULTS_SUMMARY.md` | 127 unit tests, coverage, CI/CD |
-| **CV Skills Mapping** | `CV_VS_PROJECT_SKILLS_ANALYSIS.md` | 72% CV coverage analysis (recruitment) |
+| **Gold Data Layer** | `_03_Gold/Gold_layer_documentation.md` | Gold marts, dimensions, and fact tables |
 
 ### 🏗️ Folder Structure
 
@@ -64,7 +69,19 @@ health_insurance_project/
 | Run full pipeline | `PROJECT_OVERVIEW.md` → Getting Started | `python Master_Run_Pipeline.py` |
 | Check model performance | `ML_TESTS_SUMMARY/ML_TESTS_QUICK_REFERENCE.md` | Review metrics |
 | Deploy to GCP | `DEPLOYMENT_ROADMAP.md` → Implementation | See deployment guide |
-| Run tests | `test-results/TEST_RESULTS_SUMMARY.md` | `pytest tests/` |
+| Run tests | `PROJECT_OVERVIEW.md` → Testing section | `pytest tests/` |
+
+### Docker Quick Start
+
+```bash
+# Build the image
+docker build -t health-insurance-ml .
+
+# Run the pipeline in a container
+docker run --rm health-insurance-ml
+```
+
+Use Docker when you want a reproducible, isolated environment for pipeline execution.
 
 ### Key Metrics at a Glance
 
@@ -87,7 +104,7 @@ health_insurance_project/
 4. **Phase_4_Documentation** - Production operations & real-time monitoring
 5. **ML_TESTS_SUMMARY** - Model specifications & training details
 6. **DEPLOYMENT_ROADMAP.md** - Cloud deployment & release timeline
-7. **CV_VS_PROJECT_SKILLS_ANALYSIS.md** - Recruitment & portfolio analysis
+7. **Gold_layer_documentation.md** - Curated gold-layer documentation
 
 **Eliminated:**
 - ❌ 40+ timestamped run reports (execution logs, not docs)
@@ -121,7 +138,7 @@ Ask: "Does this already exist in PROJECT_OVERVIEW or QUICK_REFERENCE?"
 2. **Need quick info?** → Check [`QUICK_REFERENCE.md`](./QUICK_REFERENCE.md)
 3. **Deploying to GCP?** → Follow [`DEPLOYMENT_ROADMAP.md`](./DEPLOYMENT_ROADMAP.md)
 4. **Production operations?** → See [`Phase_4_Documentation`](./Project_Documentation/Phase_4_Documentation/)
-5. **Recruitment use?** → Review [`CV_VS_PROJECT_SKILLS_ANALYSIS.md`](./CV_VS_PROJECT_SKILLS_ANALYSIS.md)
+5. **Gold data model details?** → Review [`Gold_layer_documentation.md`](./_03_Gold/Gold_layer_documentation.md)
 
 ---
 
@@ -130,7 +147,7 @@ Ask: "Does this already exist in PROJECT_OVERVIEW or QUICK_REFERENCE?"
 For issues or questions:
 - Check `PROJECT_OVERVIEW.md` → Troubleshooting section
 - Review `Phase_4_Documentation` → Operations guide
-- Inspect test results → `test-results/TEST_RESULTS_SUMMARY.md`
+- Run tests locally with `pytest tests/`
 
 ---
 
