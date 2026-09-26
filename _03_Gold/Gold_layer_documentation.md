@@ -1,10 +1,10 @@
-# 🚀 Health Insurance – Gold Layer Architecture & Data Products  
-### **Enterprise-Grade Documentation (Final Version)**  
-### **Covers: Fact Tables • Dimensions • Star Schema • Data Marts • ML Feature Store • Model Registry**
+# Gold Layer: Architecture and Data Products
+
+Covers fact tables, dimensions, star schemas, data marts, ML feature tables and persisted models.
 
 ---
 
-# 📘 1. Purpose of the Gold Layer
+# 1. Purpose of the Gold Layer
 The **Gold Layer** represents the *business-ready*, analytics-ready, ML-ready datasets used across reporting, dashboards, actuarial modeling, pricing teams, and fraud/churn analytics.
 
 Silver provides trusted, cleaned, validated data.  
@@ -17,11 +17,10 @@ Silver provides trusted, cleaned, validated data.
 - **ML feature tables** (supervised learning datasets)
 - **Model artifacts** (persisted ML pipelines for scoring)
 
-This mirrors how **a consultancy** would deliver a Lakehouse to a client like **Health Insurance**.
 
 ---
 
-# 📂 2. Gold Layer Storage Structure (ADLS Gen2)
+# 2. Gold Layer Storage Structure (ADLS Gen2)
 
 All Delta tables are stored under:
 
@@ -81,7 +80,7 @@ abfss://golddata@clientdatastorage.dfs.core.windows.net/
 
 ---
 
-# 🏗️ 3. Gold Layer Architecture Diagram
+# 3. Gold Layer Architecture Diagram
 
 ## **3.1 High-Level Lakehouse Flow**
 ```mermaid
@@ -104,7 +103,7 @@ flowchart TD
 
 ---
 
-# ⭐ 4. Business Role of Each Gold Layer Component
+# 4. Business Role of Each Gold Layer Component
 
 ## **4.1 Fact Tables (Quantitative Measures)**
 Fact tables store **events** or **measures**:
@@ -218,7 +217,7 @@ These tables make model training **reproducible & explainable**.
 
 ---
 
-## **4.6 Model Storage (Production-Ready ML Pipelines)**
+## **4.6 Model Storage (Persisted ML Pipelines)**
 
 Persisted ML pipelines include:
 - String indexers  
@@ -239,7 +238,7 @@ Used for:
 
 ---
 
-# 📊 5. Example: Star Schema for Claims (Final)
+# 5. Example: Star Schema for Claims
 
 ```
 star_claims
@@ -260,7 +259,7 @@ star_claims
 
 ---
 
-# 🧠 6. Example: ML Churn Scoring Output
+# 6. Example: ML Churn Scoring Output
 
 | Policy_ID | churn_prob | prediction | Premium_Band | Tenure_Band |
 |-----------|------------|------------|--------------|-------------|
@@ -269,17 +268,8 @@ star_claims
 
 ---
 
-# 🧾 7. Summary for Interview Explanation
 
-> “I built a full Lakehouse pipeline from Bronze → Silver → Gold for Health Insurance.
-> 
-> In Gold, I delivered fact tables, dimensional models, star schemas, KPI-oriented data marts, ML feature tables, and persisted ML models.
-> 
-> This mirrors how insurers like Health Insurance structure their enterprise data platforms—clean operational data in Silver, analytical datasets in Gold, and machine learning assets for churn and fraud prediction.”
-
----
-
-# 🎯 8. Full Gold Table Inventory (FINAL)
+# 7. Gold Table Inventory
 
 ```
 /fact_policies
@@ -299,7 +289,3 @@ star_claims
 /models/policy_churn_model
 /models/claims_risk_model
 ```
-
----
-
-# ✅ End of gold_layer_documentation.md

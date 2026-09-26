@@ -1,4 +1,4 @@
-# ML Utilities for Health Insurance Pipeline
+# ML utilities for the health insurance pipeline
 # Provides reusable functions for model training, evaluation, and serving
 
 import os
@@ -457,9 +457,9 @@ class DataDriftDetector:
         }
         
         if drift_detected:
-            logger.warning(f"⚠️ DATA DRIFT DETECTED: KL divergence {kl_div:.4f} > {self.kl_threshold}")
+            logger.warning(f"DATA DRIFT DETECTED: KL divergence {kl_div:.4f} > {self.kl_threshold}")
         else:
-            logger.info(f"✅ No data drift detected (KL divergence: {kl_div:.4f})")
+            logger.info(f"No data drift detected (KL divergence: {kl_div:.4f})")
         
         return result
 

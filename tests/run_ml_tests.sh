@@ -49,7 +49,7 @@ for suite_info in "${TEST_SUITES[@]}"; do
     log_file="$LOGS_DIR/${test_file%.py}_results.txt"
     
     if [ ! -f "$test_path" ]; then
-        echo -e "${RED}✗ Test file not found: $test_path${NC}"
+        echo -e "${RED}Test file not found: $test_path${NC}"
         ((TOTAL_FAILED++))
         continue
     fi
@@ -61,10 +61,10 @@ for suite_info in "${TEST_SUITES[@]}"; do
         --color=yes \
         --junit-xml="$LOGS_DIR/${test_file%.py}_junit.xml" \
         2>&1 | tee "$log_file"; then
-        echo -e "${GREEN}✓ $suite_name PASSED${NC}"
+        echo -e "${GREEN}$suite_name PASSED${NC}"
         ((TOTAL_PASSED++))
     else
-        echo -e "${RED}✗ $suite_name FAILED${NC}"
+        echo -e "${RED}$suite_name FAILED${NC}"
         ((TOTAL_FAILED++))
     fi
     
@@ -84,9 +84,9 @@ if python -m pytest "$TESTS_DIR/unit" \
     --cov-report=html:"$LOGS_DIR/coverage_html" \
     --cov-report=json:"$LOGS_DIR/coverage.json" \
     -v --tb=short 2>&1 | tee "$LOGS_DIR/coverage_report.txt"; then
-    echo -e "${GREEN}✓ Coverage report generated${NC}"
+    echo -e "${GREEN}Coverage report generated${NC}"
 else
-    echo -e "${YELLOW}⚠ Coverage report generation had issues${NC}"
+    echo -e "${YELLOW}Coverage report generation had issues${NC}"
 fi
 
 echo ""
@@ -97,13 +97,13 @@ echo -e "${BLUE}║                       TEST SUMMARY                          
 echo -e "${BLUE}╚════════════════════════════════════════════════════════════════╝${NC}"
 
 if [ $TOTAL_FAILED -eq 0 ]; then
-    echo -e "${GREEN}✓ All test suites passed!${NC}"
+    echo -e "${GREEN}All test suites passed!${NC}"
     SUMMARY_COLOR=$GREEN
-    SUMMARY_ICON="✓"
+    SUMMARY_ICON=""
 else
-    echo -e "${RED}✗ Some test suites failed${NC}"
+    echo -e "${RED}Some test suites failed${NC}"
     SUMMARY_COLOR=$RED
-    SUMMARY_ICON="✗"
+    SUMMARY_ICON=""
 fi
 
 echo ""

@@ -46,12 +46,12 @@ def pre_cache_dependencies():
         spark.stop()
         
         print("\n" + "=" * 70)
-        print("✅ SUCCESS: All dependencies cached in ~/.ivy2/cache/")
+        print("SUCCESS: All dependencies cached in ~/.ivy2/cache/")
         print("   Future runs will NOT show Ivy resolution output.")
         print("=" * 70)
         
     except Exception as e:
-        print(f"❌ ERROR during caching: {e}")
+        print(f"ERROR during caching: {e}")
         sys.exit(1)
 
 if __name__ == "__main__":

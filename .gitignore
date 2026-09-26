@@ -1,5 +1,5 @@
 # ============================================================================
-# Health Insurance Project - .gitignore
+# Health Insurance ML Pipeline - .gitignore
 # ============================================================================
 
 # Environment & Virtual Environments
@@ -119,3 +119,8 @@ test-results/
 *.egg-info/
 dist/
 build/
+
+# Local environments and CI output
+.mlflow_venv/
+test-results/
+_03_Gold/delta_staging/

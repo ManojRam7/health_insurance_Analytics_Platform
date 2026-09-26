@@ -38,7 +38,7 @@ def test_tables_are_not_empty(spark, ensure_gold_tables_registered):
             if row_count < min_rows:
                 failing.append(f"{table}: {row_count} rows (expected >= {min_rows})")
             else:
-                print(f"✅ {table:30s} {row_count:>6,d} rows")
+                print(f"{table:30s} {row_count:>6,d} rows")
         except Exception as e:
             failing.append(f"{table}: ERROR - {str(e)[:50]}")
     
@@ -67,10 +67,10 @@ def test_fact_claims_provider_id_referential_integrity(spark):
     
     orphaned = spark.sql(query).collect()
     if orphaned:
-        print(f"⚠️ Found {len(orphaned)} orphaned Provider_IDs (data quality issue): {[row.Provider_ID for row in orphaned[:3]]}")
+        print(f"Found {len(orphaned)} orphaned Provider_IDs (data quality issue): {[row.Provider_ID for row in orphaned[:3]]}")
         # Don't fail - this is a data quality warning, not a schema issue
     else:
-        print("✅ fact_claims.Provider_ID referential integrity OK")
+        print("fact_claims.Provider_ID referential integrity OK")
 
 
 def test_fact_policies_product_line_referential_integrity(spark):
@@ -94,9 +94,9 @@ def test_fact_policies_product_line_referential_integrity(spark):
     
     orphaned = spark.sql(query).collect()
     if orphaned:
-        print(f"⚠️ Found {len(orphaned)} orphaned Product_Line values (data quality issue): {[row.Product_Line for row in orphaned[:3]]}")
+        print(f"Found {len(orphaned)} orphaned Product_Line values (data quality issue): {[row.Product_Line for row in orphaned[:3]]}")
     else:
-        print("✅ fact_policies.Product_Line referential integrity OK")
+        print("fact_policies.Product_Line referential integrity OK")
 
 
 def test_fact_policies_channel_referential_integrity(spark):
@@ -121,6 +121,6 @@ def test_fact_policies_channel_referential_integrity(spark):
     
     orphaned = spark.sql(query).collect()
     if orphaned:
-        print(f"⚠️ Found {len(orphaned)} orphaned Channel values (data quality issue): {[row.Channel for row in orphaned[:3]]}")
+        print(f"Found {len(orphaned)} orphaned Channel values (data quality issue): {[row.Channel for row in orphaned[:3]]}")
     else:
-        print("✅ fact_policies.Channel referential integrity OK")
+        print("fact_policies.Channel referential integrity OK")

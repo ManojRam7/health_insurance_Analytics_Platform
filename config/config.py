@@ -1,6 +1,6 @@
 # Health Insurance Pipeline Configuration
 # This file contains all configurable parameters for the data pipeline and ML models
-# Version: 2.0 (Production-Ready)
+# Version: 2.0
 
 import os
 from pathlib import Path
@@ -348,7 +348,7 @@ def validate_config():
     if dq.get("premium_min", 0) >= dq.get("premium_max", 10000):
         raise ValueError("Invalid premium range in DATA_QUALITY config")
     
-    print("✅ Configuration validation passed")
+    print("Configuration validation passed")
 
 
 if __name__ == "__main__":

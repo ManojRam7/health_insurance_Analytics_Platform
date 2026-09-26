@@ -1,4 +1,4 @@
-# 📊 Gold fact_claims Layer – Architecture & Business Report
+# Gold fact_claims Layer – Architecture & Business Report
 
 ## Table of Contents
 
@@ -8,19 +8,17 @@
 4. [New Gold Features](#4-new-gold-features)  
 5. [Schema & Fact Structure](#5-schema--fact-structure)  
 6. [Architecture Diagram](#6-architecture-diagram)  
-7. [Interview Explanation](#7-interview-explanation)  
-
 ---
 
 ## 1. Context & Objective
 
 The Gold `fact_claims` layer transforms **clean Silver claims** into an **analytics-ready fact table** that:
 
-- 📊 Combines claims with provider & fraud context  
-- ✅ Derives business KPIs at the claim level  
-- 💰 Enables cost, fraud, and performance analytics  
-- 🔗 Joins multiple Silver dimensions (Claims + Providers)  
-- 🔒 Maintains transparent data quality signals  
+- Combines claims with provider & fraud context  
+- Derives business KPIs at the claim level  
+- Enables cost, fraud, and performance analytics  
+- Joins multiple Silver dimensions (Claims + Providers)  
+- Maintains transparent data quality signals  
 
 **Enterprise standards applied:**
 - Fact table design (grain: one row per claim)  
@@ -158,9 +156,9 @@ Tracked in `silverdata/_metrics`:
 
 **Key insight:** Gold pre-computes joins and KPIs. Silver users can self-serve; Gold users have:
 - �� Pre-joined provider context  
-- 💰 Ready-to-use cost ratios  
-- 🚨 Pre-flagged high-cost claims  
-- 🔍 Transparent DQ lineage  
+- Ready-to-use cost ratios  
+- Pre-flagged high-cost claims  
+- Transparent DQ lineage  
 
 ---
 
@@ -170,8 +168,8 @@ Tracked in `silverdata/_metrics`:
 
 | Column | Type | Source | Grain Identifier |
 |--------|------|--------|------------------|
-| Claim_ID | string | Silver Claims | ✅ Yes (grain key) |
-| Provider_ID | string | Silver Claims | ✅ Yes (grouping) |
+| Claim_ID | string | Silver Claims | Yes (grain key) |
+| Provider_ID | string | Silver Claims | Yes (grouping) |
 | Member_Key | string | Silver Claims | Supporting |
 
 ### Date Dimension Fields
@@ -251,25 +249,8 @@ Tracked in `silverdata/_metrics`:
 
 ---
 
-## 7. Interview Explanation
 
-> "The Gold fact_claims table is the analytics-ready view of all claims. I built it on top of Silver claims by joining in provider fraud context, deriving business KPIs like payout-to-claim ratios and high-cost flags, and pre-computing everything stakeholders need for reporting, BI dashboards, and ML. Each claim maintains its data quality flags so users can filter to trustworthy data if needed. The grain is one row per claim, making it perfect for direct consumption by BI tools, dashboards, and predictive models. It represents the final, business-optimized version of the claims dataset—the single source of truth for all claims analytics."
-
-### Key Talking Points
-- ✅ Grain: One row per Claim_ID  
-- ✅ Joined with provider fraud context  
-- ✅ Payout_to_Claim_Ratio KPI (reimbursement analysis)  
-- ✅ High_Cost_Claim_Flag (top 10% by spend)  
-- ✅ DQ flags carried forward for transparency  
-- ✅ Pre-computed joins (no user-side joins needed)  
-- ✅ Partitioned by Date_Reported (query performance)  
-- ✅ Metrics logged for observability  
-- ✅ Direct consumption by BI/ML  
-- ✅ Single source of truth for claims analytics  
-
----
-
-## 8. Business Value
+## 7. Business Value
 
 ### For BI & Dashboards
 - Pre-joined dimensions eliminate user-side joins  
@@ -293,4 +274,4 @@ Tracked in `silverdata/_metrics`:
 
 ---
 
-**Last Updated:** December 2025 | **Status:** Production | **Owner:** Data Engineering
+**Last Updated:** December 2025 | **Owner:** Manoj Ram Mopati

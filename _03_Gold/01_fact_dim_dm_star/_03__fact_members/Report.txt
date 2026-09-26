@@ -1,5 +1,5 @@
 ====================================================================
-      GOLD FACT MEMBERS — BUSINESS REPORT & INTERVIEW DOCUMENT
+      GOLD FACT MEMBERS: BUSINESS REPORT
 ====================================================================
 
 This document explains:
@@ -9,7 +9,6 @@ This document explains:
 3. How Silver → Gold transformations work
 4. KPIs and insights stakeholders gain
 5. Architecture diagram & lineage
-6. Interview script to confidently explain the Gold layer
 
 ====================================================================
 1. PURPOSE OF GOLD FACT MEMBERS
@@ -172,35 +171,6 @@ Helps identify claim hotspots and pricing differences.
                       ▼
           Dashboards / BI / ML Models
 
-====================================================================
-5. INTERVIEW SCRIPT (READY TO SPEAK)
-====================================================================
-
-“I built the Gold fact_members dataset to serve as the primary analytical
-foundation for understanding customer demographics, behaviour, and health
-risk. The Silver layer ensures the data is clean and validated; Gold transforms
-it into business insight.
-
-In Gold, I applied segmentation logic—Age bands, BMI categories, smoker/non-smoker 
-status, chronic condition grouping, employment segmentation, and region grouping.
-These are extremely valuable to actuaries and data scientists because they 
-represent real-world risk factors.
-
-Additionally, I included data quality flags so analysts can understand whether 
-a field is trustworthy or should be treated cautiously.
-
-The final Gold table is fully flattened, enriched, and modelling-ready. BI teams 
-can use it directly without additional joins or transformations.”
-
-====================================================================
-6. ONE-PARAGRAPH EXPLANATION FOR HR
-====================================================================
-
-“The Gold Members dataset converts cleaned Silver data into business intelligence.
-It adds demographic and health risk segmentation, validates age and BMI integrity,
-and prepares features used by actuaries, underwriters, and analysts. This enables
-accurate pricing, targeted marketing, and predictive modelling while maintaining 
-full governance and audit trails.”
 
 ====================================================================
 END OF REPORT

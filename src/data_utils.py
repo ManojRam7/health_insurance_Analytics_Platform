@@ -1,4 +1,4 @@
-# Data Utilities for Health Insurance Pipeline
+# Data utilities for the health insurance pipeline
 # Provides reusable functions for data quality, validation, and transformation
 
 import logging
@@ -46,7 +46,7 @@ class DataQualityValidator:
         """
         total_rows = df.count()
         if total_rows == 0:
-            logger.warning(f"⚠️ {table_name} is empty!")
+            logger.warning(f"{table_name} is empty!")
             return {}
         
         if threshold_pct is None:
@@ -64,9 +64,9 @@ class DataQualityValidator:
         violations = {col: pct for col, pct in null_dict.items() if pct > threshold_pct}
         
         if violations:
-            logger.warning(f"⚠️ {table_name} - Null threshold violations: {violations}")
+            logger.warning(f"{table_name} - Null threshold violations: {violations}")
         else:
-            logger.info(f"✅ {table_name} - Null check passed (all < {threshold_pct}%)")
+            logger.info(f"{table_name} - Null check passed (all < {threshold_pct}%)")
         
         return null_dict
     
@@ -110,7 +110,7 @@ class DataQualityValidator:
                 "in_range": out_of_range == 0
             }
             
-            status = "✅" if out_of_range == 0 else "⚠️"
+            status = "" if out_of_range == 0 else ""
             logger.info(f"{status} {table_name}.{col_name}: {actual_min:.2f}-{actual_max:.2f} "
                        f"(expected: {min_val}-{max_val}, out-of-range: {out_of_range})")
         
@@ -148,7 +148,7 @@ class DataQualityValidator:
                 "valid": len(unexpected_values) == 0
             }
             
-            status = "✅" if len(unexpected_values) == 0 else "⚠️"
+            status = "" if len(unexpected_values) == 0 else ""
             logger.info(f"{status} {table_name}.{col_name}: {len(distinct_values)} distinct values "
                        f"(unexpected: {unexpected_values})")
         
@@ -180,7 +180,7 @@ class DataQualityValidator:
             "no_duplicates": duplicates == 0
         }
         
-        status = "✅" if duplicates == 0 else "⚠️"
+        status = "" if duplicates == 0 else ""
         logger.info(f"{status} {table_name} - Duplicates: {duplicates}/{total_rows}")
         
         return result
@@ -204,7 +204,7 @@ class DataQualityValidator:
             "columns": df.columns,
         }
         
-        logger.info(f"📊 Data Quality Report: {table_name} ({report['row_count']} rows, "
+        logger.info(f"Data Quality Report: {table_name} ({report['row_count']} rows, "
                    f"{report['column_count']} columns)")
         
         return report
@@ -414,7 +414,7 @@ class BatchScoringManager:
             writer = writer.partitionBy(partition_cols)
         
         writer.save(output_path)
-        logger.info(f"✅ Scored {df.count()} predictions written to {output_path} "
+        logger.info(f"Scored {df.count()} predictions written to {output_path} "
                    f"(mode={mode}, partitions={partition_cols})")
     
     def get_latest_scores(self,

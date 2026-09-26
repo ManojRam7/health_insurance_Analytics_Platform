@@ -34,7 +34,7 @@ def latest_finished_run_id(experiment_name: str) -> str:
     
     # If no FINISHED runs, get the latest run (which should be ended)
     if df is None or len(df) == 0:
-        print(f"⚠️  No FINISHED runs found, fetching latest run (may be ended)...")
+        print(f" No FINISHED runs found, fetching latest run (may be ended)...")
         df = mlflow.search_runs(
             experiment_ids=[exp.experiment_id],
             order_by=["attributes.start_time DESC"],
@@ -50,7 +50,7 @@ def latest_finished_run_id(experiment_name: str) -> str:
 def ensure_registered_model(name: str):
     try:
         client.create_registered_model(name)
-        print(f"✅ Created registered model: {name}")
+        print(f"Created registered model: {name}")
     except Exception:
         # already exists
         pass
@@ -72,7 +72,7 @@ def register_latest_if_needed(experiment_name: str, model_name: str, artifact_pa
 
     existing_ver = get_version_for_run(model_name, run_id)
     if existing_ver is not None:
-        print(f"⚠️ Already registered: {model_name} v{existing_ver} for run_id={run_id}")
+        print(f"Already registered: {model_name} v{existing_ver} for run_id={run_id}")
         return existing_ver
 
     mv = client.create_model_version(
@@ -80,13 +80,13 @@ def register_latest_if_needed(experiment_name: str, model_name: str, artifact_pa
         source=model_uri,
         run_id=run_id,
     )
-    print(f"✅ Registered {model_name} v{mv.version} from run_id={run_id}")
+    print(f"Registered {model_name} v{mv.version} from run_id={run_id}")
     return str(mv.version)
 
 
 def promote_alias(model_name: str, version: str, alias: str, *, tags: dict[str, str] | None = None):
     client.set_registered_model_alias(model_name, alias, version)
-    print(f"✅ Set alias '{alias}' -> {model_name} v{version}")
+    print(f"Set alias '{alias}' -> {model_name} v{version}")
 
     # Add audit tags at version level
     client.set_model_version_tag(model_name, version, "lifecycle_alias", alias)

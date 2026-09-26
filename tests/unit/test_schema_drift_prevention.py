@@ -64,7 +64,7 @@ def test_schema_snapshots_unchanged_from_committed_versions():
                 msg += "Update schemas/gold/{}.json and commit.".format(table_name)
                 drift_found.append(msg)
             else:
-                print(f"✅ {table_name:35s} schema unchanged")
+                print(f"{table_name:35s} schema unchanged")
         
         except Exception as e:
             # Can't check (no pandas/delta in unit test env) - skip

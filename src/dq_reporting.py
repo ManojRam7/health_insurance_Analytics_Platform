@@ -298,12 +298,12 @@ class DataQualityChecker:
         if report.critical_issues:
             print("\nCRITICAL ISSUES:")
             for issue in report.critical_issues:
-                print(f"  ❌ {issue}")
+                print(f"  {issue}")
         
         if report.warnings:
             print("\nWARNINGS:")
             for warning in report.warnings:
-                print(f"  ⚠️  {warning}")
+                print(f"   {warning}")
         
         print("\nTRENDS:")
         print(f"  Trend: {report.trends['quality_trend']}")
@@ -340,13 +340,13 @@ if __name__ == "__main__":
     )
     
     print("\n" + "="*100)
-    print("🔍 DATA QUALITY REPORTING - PHASE 4")
+    print("DATA QUALITY REPORTING - PHASE 4")
     print("="*100)
     
     try:
         # Initialize DQ checker
         dq = get_dq_checker()
-        print("✅ DQ Checker initialized")
+        print("DQ Checker initialized")
         
         # Generate sample report (would normally use actual data)
         report = PipelineQualityReport(
@@ -388,13 +388,13 @@ if __name__ == "__main__":
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         filename = f"dq_report_{timestamp}.json"
         output_path = dq.save_report(report, filename=filename)
-        print(f"✅ Report saved to: {output_path}")
+        print(f"Report saved to: {output_path}")
         
-        print("\n📊 DQ Reporting Complete!")
+        print("\nDQ Reporting Complete!")
         print("="*100 + "\n")
         
     except Exception as e:
-        print(f"❌ Error running DQ reporting: {e}")
+        print(f"Error running DQ reporting: {e}")
         import traceback
         traceback.print_exc()
         exit(1)

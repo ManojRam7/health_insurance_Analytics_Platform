@@ -1,4 +1,4 @@
-# 📄 Policies Silver Layer – Architecture & Business Report
+# Policies Silver Layer – Architecture & Business Report
 
 ## Table of Contents
 
@@ -8,19 +8,17 @@
 4. [New Silver Features](#4-new-silver-features)  
 5. [Data Quality & Validation](#5-data-quality--validation)  
 6. [Architecture Diagram](#6-architecture-diagram)  
-7. [Interview Explanation](#7-interview-explanation)  
-
 ---
 
 ## 1. Context & Objective
 
 The Policies Silver layer transforms **raw, inconsistent policy records** into a **clean, validated, business-ready dataset** that:
 
-- 📋 Enforces enterprise data standards  
-- ✅ Validates policy identity & dates  
-- 💰 Ensures financial data sanity  
-- 📊 Adds KPIs for churn & profitability analytics  
-- 🔒 Provides transparent data quality signals  
+- Enforces enterprise data standards  
+- Validates policy identity & dates  
+- Ensures financial data sanity  
+- Adds KPIs for churn & profitability analytics  
+- Provides transparent data quality signals  
 
 **Enterprise standards applied:**
 - Schema enforcement  
@@ -177,10 +175,10 @@ Tracked in `silverdata/_metrics`:
 | **dq_renewal_valid** | int | Renewal logic consistent | 1 or 0 |
 
 **Key insight:** These fields are **added by Silver**, not in Bronze. They enable:
-- 📊 Reliable KPI reporting  
-- 🔍 Transparent data quality  
-- 💰 Accurate financial analysis  
-- 📈 Churn & retention modeling  
+- Reliable KPI reporting  
+- Transparent data quality  
+- Accurate financial analysis  
+- Churn & retention modeling  
 
 ---
 
@@ -264,23 +262,5 @@ This allows:
 
 ---
 
-## 7. Interview Explanation
 
-> "The Policies Silver layer transforms raw policy records into a trusted, analysis-ready dataset. I enforce strict schema, validate primary keys, fix and validate dates (ensuring start ≤ end), check financial sanity (non-negative, reasonable ranges), validate renewal logic (accepted ⊆ offered), standardize channels and products via reference dimensions, and add critical KPIs like Policy_Duration_Days and corrected Renewal_Conversion. I use transparent data quality flags so downstream users can confidently filter data. All invalid records are quarantined with audit codes, never silently dropped. The result is a clean, governance-ready Policies dataset that powers pricing, churn, and profitability analytics."
-
-### Key Talking Points
-- ✅ Enforced enterprise schema  
-- ✅ PK validation & deduplication  
-- ✅ Date validation & repair (no reversals)  
-- ✅ Money field validation (non-negative, reasonable)  
-- ✅ Discount validation (0–100%)  
-- ✅ Renewal logic enforcement (offered ⊇ accepted)  
-- ✅ Reference dimension standardization  
-- ✅ Policy_Duration_Days KPI (churn, profitability)  
-- ✅ Renewal_Conversion KPI (corrected retention rate)  
-- ✅ 3 DQ flags (date, money, discount, renewal)  
-- ✅ Quarantine + metrics for governance  
-
----
-
-**Last Updated:** December 2025 | **Status:** Production | **Owner:** Data Engineering
+**Last Updated:** December 2025 | **Owner:** Manoj Ram Mopati

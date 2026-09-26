@@ -304,7 +304,7 @@ class ModelEvaluator:
             recommendations.append(f"Upgrade to {best_version} for improved performance")
         
         if drift_count > 0:
-            recommendations.append(f"⚠️  Data drift detected in {drift_count} version(s)")
+            recommendations.append(f" Data drift detected in {drift_count} version(s)")
         
         if trend == "degrading":
             recommendations.append("Performance is degrading - review training data and features")
@@ -385,7 +385,7 @@ class ModelEvaluator:
             print(f"  {i}. {feature:<30} {bar} {importance:.4f}")
         
         if report.drift_alert_count > 0:
-            print(f"\n⚠️  DATA DRIFT ALERTS: {report.drift_alert_count}")
+            print(f"\n DATA DRIFT ALERTS: {report.drift_alert_count}")
         
         if report.recommendations:
             print("\nRECOMMENDATIONS:")
@@ -423,7 +423,7 @@ if __name__ == "__main__":
     )
     
     print("\n" + "="*100)
-    print("🤖 MODEL EVALUATION & COMPARISON - PHASE 4")
+    print("MODEL EVALUATION & COMPARISON - PHASE 4")
     print("="*100)
     
     try:
@@ -431,7 +431,7 @@ if __name__ == "__main__":
         evaluator = get_model_evaluator(
             mlflow_uri=f"file:{PROJECT_ROOT / 'mlruns'}"
         )
-        print("✅ Model Evaluator initialized")
+        print("Model Evaluator initialized")
         
         # Example model metrics
         models_to_evaluate = [
@@ -440,7 +440,7 @@ if __name__ == "__main__":
             "health_high_cost_model",
         ]
         
-        print("\n📋 Model Performance Summary:")
+        print("\nModel Performance Summary:")
         print("-"*100)
         print(f"{'Model':<30} {'Version':<10} {'AUC Score':<15} {'F1 Score':<15} {'Status':<20}")
         print("-"*100)
@@ -457,15 +457,15 @@ if __name__ == "__main__":
         print("-"*100)
         
         # Model comparison
-        print("\n📊 Model Drift & Performance Trends:")
+        print("\nModel Drift & Performance Trends:")
         print("-"*100)
         print(f"{'Model':<30} {'Data Drift':<20} {'Performance Trend':<20}")
         print("-"*100)
         
         drift_data = [
-            ("health_policy_churn_model", "✅ None", "📈 Improving"),
-            ("health_claims_fraud_model", "⚠️ Minor", "➡️ Stable"),
-            ("health_high_cost_model", "✅ None", "📈 Improving"),
+            ("health_policy_churn_model", "None", "Improving"),
+            ("health_claims_fraud_model", "Minor", "Stable"),
+            ("health_high_cost_model", "None", "Improving"),
         ]
         
         for model_name, drift, trend in drift_data:
@@ -474,7 +474,7 @@ if __name__ == "__main__":
         print("-"*100)
         
         # Feature importance
-        print("\n⭐ Top Features by Importance (Sample):")
+        print("\nTop Features by Importance (Sample):")
         print("-"*100)
         
         features = [
@@ -513,7 +513,7 @@ if __name__ == "__main__":
                 feature: importance
                 for feature, importance in features
             },
-            "summary": "All models are production-ready with healthy performance metrics"
+            "summary": "All models meet the evaluation thresholds"
         }
         
         # Save to file
@@ -525,13 +525,13 @@ if __name__ == "__main__":
         with open(output_file, 'w') as f:
             json.dump(report_data, f, indent=2)
         
-        print(f"✅ Model Evaluation Report saved to: {output_file}")
-        print("\n✅ Model Evaluation Complete!")
-        print("📈 All models are production-ready with healthy performance metrics")
+        print(f"Model Evaluation Report saved to: {output_file}")
+        print("\nModel Evaluation Complete!")
+        print("All models meet the evaluation thresholds")
         print("="*100 + "\n")
         
     except Exception as e:
-        print(f"❌ Error running model evaluation: {e}")
+        print(f"Error running model evaluation: {e}")
         import traceback
         traceback.print_exc()
         exit(1)

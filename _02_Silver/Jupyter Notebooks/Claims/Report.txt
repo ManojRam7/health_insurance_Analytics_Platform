@@ -1,4 +1,4 @@
-# 📋 Claims Silver Layer – Architecture & Business Report
+# Claims Silver Layer – Architecture & Business Report
 
 ## Table of Contents
 
@@ -8,19 +8,17 @@
 4. [New Silver Features](#4-new-silver-features)  
 5. [Data Quality & Quarantine](#5-data-quality--quarantine)  
 6. [Architecture Diagram](#6-architecture-diagram)  
-7. [Interview Explanation](#7-interview-explanation)  
-
 ---
 
 ## 1. Context & Objective
 
 The Claims Silver layer transforms **raw, messy claim records** from disparate Kaggle sources into a **clean, validated, analysis-ready dataset** that:
 
-- 📊 Enforces enterprise data standards  
-- ✅ Validates claim integrity  
-- 🔗 Links claims to valid providers  
-- 📈 Adds operational KPIs  
-- 🔒 Includes transparent data quality flags  
+- Enforces enterprise data standards  
+- Validates claim integrity  
+- Links claims to valid providers  
+- Adds operational KPIs  
+- Includes transparent data quality flags  
 
 **Enterprise standards applied:**
 - Schema enforcement  
@@ -147,9 +145,9 @@ Tracked in `silverdata/_metrics`:
 | **dq_date_valid** | int | Dates are valid & ordered | 1 or 0 |
 
 **Key insight:** These fields are **added by Silver**, not in Bronze. They enable:
-- 📊 SLA reporting & monitoring  
-- 🔍 Transparent data quality  
-- 🚨 Early detection of bad claims  
+- SLA reporting & monitoring  
+- Transparent data quality  
+- Early detection of bad claims  
 
 ---
 
@@ -228,21 +226,5 @@ This allows:
 
 ---
 
-## 7. Interview Explanation
 
-> "The Claims Silver layer transforms raw claim records from Kaggle sources into a trusted, analysis-ready dataset. I enforce strict schema, validate primary keys, ensure provider referential integrity, fix and validate dates, check financial sanity, and add the critical Days_To_Settle KPI. I use transparent data quality flags so downstream users can confidently filter data and understand data health. All invalid records are quarantined with audit codes, never silently dropped. The result is a clean, governance-ready Claims dataset that powers KPI reporting, SLA monitoring, and fraud analytics."
-
-### Key Talking Points
-- ✅ Enforced enterprise schema  
-- ✅ PK validation (Claim_ID)  
-- ✅ Provider FK validation (7% quarantined)  
-- ✅ Date validation & repair  
-- ✅ Money field validation  
-- ✅ Days_To_Settle KPI (SLA metric)  
-- ✅ 2 DQ flags (date, money)  
-- ✅ Quarantine + metrics for governance  
-- ✅ 100% claim-provider referential integrity  
-
----
-
-**Last Updated:** December 2025 | **Status:** Production | **Owner:** Data Engineering
+**Last Updated:** December 2025 | **Owner:** Manoj Ram Mopati

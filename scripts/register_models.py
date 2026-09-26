@@ -34,7 +34,7 @@ def latest_finished_run_id(experiment_name: str) -> str:
     
     # If no FINISHED runs, get the latest run (which should be ended)
     if df is None or len(df) == 0:
-        print(f"⚠️  No FINISHED runs found, fetching latest run (may be ended)...")
+        print(f" No FINISHED runs found, fetching latest run (may be ended)...")
         df = mlflow.search_runs(
             experiment_ids=[exp.experiment_id],
             order_by=["attributes.start_time DESC"],
@@ -50,7 +50,7 @@ def latest_finished_run_id(experiment_name: str) -> str:
 def ensure_registered_model(name: str):
     try:
         client.create_registered_model(name)
-        print(f"✅ Created registered model: {name}")
+        print(f"Created registered model: {name}")
     except Exception:
         # already exists
         pass
@@ -87,9 +87,9 @@ def copy_run_tags_to_model_version(run_id: str, model_name: str, version: str, e
         try:
             client.set_model_version_tag(model_name, version, str(k), str(v))
         except Exception as e:
-            print(f"⚠️ Could not set tag {k} on {model_name} v{version}: {e}")
+            print(f"Could not set tag {k} on {model_name} v{version}: {e}")
 
-    print(f"🏷️  Copied {len(run_tags)} tags to {model_name} v{version}")
+    print(f" Copied {len(run_tags)} tags to {model_name} v{version}")
 
 
 def register_latest(experiment_name: str, model_name: str, artifact_path: str):
@@ -99,7 +99,7 @@ def register_latest(experiment_name: str, model_name: str, artifact_path: str):
     ensure_registered_model(model_name)
 
     if already_registered(model_name, run_id):
-        print(f"⚠️ Skip: {model_name} already has a version for run_id={run_id}")
+        print(f"Skip: {model_name} already has a version for run_id={run_id}")
         return
 
     mv = client.create_model_version(
@@ -107,7 +107,7 @@ def register_latest(experiment_name: str, model_name: str, artifact_path: str):
         source=model_uri,
         run_id=run_id
     )
-    print(f"✅ Registered {model_name} v{mv.version} from run_id={run_id}")
+    print(f"Registered {model_name} v{mv.version} from run_id={run_id}")
 
     # Copy run tags -> model version tags so they appear in the registry UI
     copy_run_tags_to_model_version(

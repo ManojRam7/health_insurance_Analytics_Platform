@@ -284,16 +284,16 @@ if __name__ == "__main__":
     )
     
     print("\n" + "="*100)
-    print("⚡ PERFORMANCE PROFILING - PHASE 4")
+    print("PERFORMANCE PROFILING - PHASE 4")
     print("="*100)
     
     try:
         # Get profiler instance
         prof = get_profiler()
-        print("✅ Profiler initialized")
+        print("Profiler initialized")
         
         # Simulate some profiling data
-        print("\n📊 Pipeline Execution Summary:")
+        print("\nPipeline Execution Summary:")
         print("-"*100)
         print(f"{'Layer':<20} {'Duration (s)':<20} {'Memory (MB)':<20} {'% of Total':<20}")
         print("-"*100)
@@ -318,13 +318,13 @@ if __name__ == "__main__":
         
         # Save profiling results
         output_path = prof.save_report()
-        print(f"\n✅ Profiling results saved to: {output_path}")
+        print(f"\nProfiling results saved to: {output_path}")
         
-        print("\n⏱️  Profiling Complete!")
+        print("\n Profiling Complete!")
         print("="*100 + "\n")
         
     except Exception as e:
-        print(f"❌ Error running profiling: {e}")
+        print(f"Error running profiling: {e}")
         import traceback
         traceback.print_exc()
         exit(1)

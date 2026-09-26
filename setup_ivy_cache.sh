@@ -17,7 +17,7 @@ python pre_cache_ivy.py
 
 if [ $? -eq 0 ]; then
     echo ""
-    echo "✅ Setup complete! Dependencies are now cached."
+    echo "Setup complete! Dependencies are now cached."
     echo ""
     echo "Next steps:"
     echo "  1. Run your pipeline: ./run_pipeline_clean.sh --from-index 0"
@@ -25,6 +25,6 @@ if [ $? -eq 0 ]; then
     echo ""
 else
     echo ""
-    echo "❌ Setup failed. Check the error above."
+    echo "Setup failed. Check the error above."
     exit 1
 fi

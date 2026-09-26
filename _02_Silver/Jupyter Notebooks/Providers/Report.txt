@@ -1,4 +1,4 @@
-# 🏥 Providers Silver Layer – Architecture & Business Report
+# Providers Silver Layer – Architecture & Business Report
 
 ## Table of Contents
 
@@ -8,8 +8,6 @@
 4. [New Silver Features](#4-new-silver-features)  
 5. [The FK Fix: Claims → Providers](#5-the-fk-fix-claims--providers)  
 6. [Architecture Diagram](#6-architecture-diagram)  
-7. [Interview Explanation](#7-interview-explanation)  
-
 ---
 
 ## 1. Context & Objective
@@ -18,11 +16,11 @@ The Providers Silver layer solves a **critical referential integrity issue**: cl
 
 This layer transforms **inconsistent provider data** into a **complete, validated provider dimension** that:
 
-- 📋 Ensures every claim has a valid provider  
-- ✅ Enforces provider FK integrity (100%)  
-- 🔗 Preserves fraud risk attributes  
-- 📊 Adds lineage & audit trails  
-- 🔒 Enables provider-level analytics  
+- Ensures every claim has a valid provider  
+- Enforces provider FK integrity (100%)  
+- Preserves fraud risk attributes  
+- Adds lineage & audit trails  
+- Enables provider-level analytics  
 
 **Enterprise standards applied:**
 - Schema enforcement  
@@ -129,10 +127,10 @@ Tracked in `silverdata/_metrics`:
 | **Fraud_Flag** | int | 0 = clean, 1 = risky | 0, 1 |
 
 **Key insight:** These fields enable:
-- 📊 Provider-level fraud analytics  
-- 🔍 Explainable fraud scoring  
-- 📈 Provider performance dashboards  
-- 🎯 Network quality & risk management  
+- Provider-level fraud analytics  
+- Explainable fraud scoring  
+- Provider performance dashboards  
+- Network quality & risk management  
 
 ---
 
@@ -142,16 +140,16 @@ Tracked in `silverdata/_metrics`:
 
 | Metric | Value |
 |--------|-------|
-| Claims with valid Provider_FK | 0% ❌ |
-| Orphan claims (no provider match) | 100% ❌ |
+| Claims with valid Provider_FK | 0% |
+| Orphan claims (no provider match) | 100% |
 | Business impact | Cannot do provider analytics |
 
 ### The Solution (Silver)
 
 | Metric | Value |
 |--------|-------|
-| Claims with valid Provider_FK | 100% ✅ |
-| Orphan claims | 0% ✅ |
+| Claims with valid Provider_FK | 100% |
+| Orphan claims | 0% |
 | Business impact | Provider analytics now reliable |
 
 ### How It Works
@@ -162,10 +160,10 @@ Tracked in `silverdata/_metrics`:
 4. Result: Every claim now has a matching provider in Silver  
 
 **Business value:**
-- ✅ Enables Claims → Providers joins in dashboards  
-- ✅ Allows provider-level fraud scoring  
-- ✅ Supports provider performance analysis  
-- ✅ Powers provider risk segmentation  
+- Enables Claims → Providers joins in dashboards  
+- Allows provider-level fraud scoring  
+- Supports provider performance analysis  
+- Powers provider risk segmentation  
 
 ---
 
@@ -214,20 +212,5 @@ Tracked in `silverdata/_metrics`:
 
 ---
 
-## 7. Interview Explanation
 
-> "The Providers Silver layer fixes a critical referential integrity issue: Bronze claims reference providers that don't exist in Bronze providers. I unify two sources—the Bronze provider dimension and all unique providers appearing in claims—to create a complete, validated provider dimension. I preserve original fraud labels from Kaggle, default unknown providers to fraud_flag=0 (no evidence of fraud), and add a Fraud_Label_Source field for auditability. The result is a single source of truth for providers with 100% FK coverage to claims, enabling provider-level fraud analytics, cost analysis, and network quality reporting."
-
-### Key Talking Points
-- ✅ Unioned Bronze providers + claims-derived providers  
-- ✅ Solved 100% FK mismatch (0% → 100% coverage)  
-- ✅ Preserved original fraud labels  
-- ✅ Added audit lineage via Fraud_Label_Source  
-- ✅ Deduplicated by Provider_ID  
-- ✅ Schema enforced  
-- ✅ Metrics logged for observability  
-- ✅ Enables provider analytics & risk scoring  
-
----
-
-**Last Updated:** December 2025 | **Status:** Production | **Owner:** Data Engineering
+**Last Updated:** December 2025 | **Owner:** Manoj Ram Mopati

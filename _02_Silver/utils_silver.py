@@ -47,9 +47,9 @@ def build_paths(storage_account):
     paths_gold = {
         "fact_members":   f"abfss://{CONTAINER_GOLD}@{storage_account}.dfs.core.windows.net/fact_members",
         "fact_claims":    f"abfss://{CONTAINER_GOLD}@{storage_account}.dfs.core.windows.net/fact_claims",
-        # 🔍 NEW: central DQ monitoring snapshot table
+        # NEW: central DQ monitoring snapshot table
         "dq_monitoring": f"abfss://{CONTAINER_GOLD}@{storage_account}.dfs.core.windows.net/dq_monitoring",
-        # 🔁 NEW: central ML monitoring table
+        # NEW: central ML monitoring table
         "ml_monitoring": f"abfss://{CONTAINER_GOLD}@{storage_account}.dfs.core.windows.net/ml_monitoring",
          "ml_monitoring_view": f"abfss://{CONTAINER_GOLD}@{storage_account}.dfs.core.windows.net/ml_monitoring_view",
     }
@@ -83,9 +83,9 @@ def enforce_schema(df: DataFrame, target_schema: StructType) -> DataFrame:
 def check_duplicates(df: DataFrame, key_cols: list) -> DataFrame:
     dup_count = df.groupBy(key_cols).count().filter("count > 1").count()
     if dup_count > 0:
-        print(f"⚠️ Found {dup_count} duplicate rows for keys {key_cols}")
+        print(f"Found {dup_count} duplicate rows for keys {key_cols}")
     else:
-        print("✅ No duplicate keys found.")
+        print("No duplicate keys found.")
     return df.dropDuplicates(key_cols)
 
 def data_quality_summary(df: DataFrame, table_name: str):
@@ -228,13 +228,13 @@ def dq_expect(df: DataFrame, name: str, expr: str, severity: str,
 
     if bad_cnt > 0:
         pct = round(bad_cnt / max(total,1) * 100.0, 4)
-        print(f"❌ DQ FAIL [{table_label}] {name}: {bad_cnt}/{total} ({pct}%)")
+        print(f"DQ FAIL [{table_label}] {name}: {bad_cnt}/{total} ({pct}%)")
         quarantine(bad, name, table_label, paths_silver)
 
         if severity.lower() == "error":
             raise Exception(f"DQ gate failed: {table_label} · {name}")
     else:
-        print(f"✅ DQ PASS [{table_label}] {name}")
+        print(f"DQ PASS [{table_label}] {name}")
 
 def dq_left_anti_ref(df: DataFrame, ref_df: DataFrame, key_col: str, ref_col: str,
                      name: str, severity: str, table_label: str, paths_silver: dict):
@@ -249,13 +249,13 @@ def dq_left_anti_ref(df: DataFrame, ref_df: DataFrame, key_col: str, ref_col: st
 
     if bad_cnt > 0:
         pct = round(bad_cnt / max(total,1) * 100.0, 4)
-        print(f"❌ DQ FAIL [{table_label}] {name}: {bad_cnt}/{total} ({pct}%) missing in reference")
+        print(f"DQ FAIL [{table_label}] {name}: {bad_cnt}/{total} ({pct}%) missing in reference")
         quarantine(bad, name, table_label, paths_silver)
 
         if severity.lower() == "error":
             raise Exception(f"DQ gate failed: {table_label} · {name}")
     else:
-        print(f"✅ DQ PASS [{table_label}] {name}")
+        print(f"DQ PASS [{table_label}] {name}")
 
 
 # ------------------------------------------------
@@ -494,4 +494,4 @@ def write_ml_monitoring_view(
     
 
 
-print("✅ utils_silver.py loaded")
+print("utils_silver.py loaded")

@@ -223,7 +223,7 @@ class PipelineE2ETest:
             # Expected tables validation
             for table in expected_tables:
                 # Note: In real execution, would verify table existence in Spark
-                logger.debug(f"  ✓ Expected table: {table}")
+                logger.debug(f"  Expected table: {table}")
             
             execution_time = time.time() - test_start
             status = TestStatus.PASSED
@@ -232,7 +232,7 @@ class PipelineE2ETest:
             execution_time = time.time() - test_start
             status = TestStatus.FAILED
             errors.append(str(e))
-            logger.error(f"  ✗ {notebook_name} failed: {e}")
+            logger.error(f"  {notebook_name} failed: {e}")
         
         # Create result
         result = NotebookTestResult(
@@ -307,9 +307,9 @@ class PipelineE2ETest:
         print("PIPELINE E2E TEST SUMMARY")
         print("="*80)
         print(f"Total Notebooks: {summary.total_notebooks}")
-        print(f"Passed: {summary.passed} ✅")
-        print(f"Failed: {summary.failed} ❌")
-        print(f"Skipped: {summary.skipped} ⏭️")
+        print(f"Passed: {summary.passed} ")
+        print(f"Failed: {summary.failed} ")
+        print(f"Skipped: {summary.skipped} ")
         print(f"Total Execution Time: {summary.total_execution_time:.2f}s")
         print(f"Average Execution Time: {summary.average_execution_time:.2f}s")
         print(f"Peak Memory: {summary.peak_memory:.2f} MB")

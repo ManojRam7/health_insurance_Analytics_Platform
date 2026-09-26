@@ -419,7 +419,7 @@ def write_run_report(
     with md_path.open("w", encoding="utf-8") as f:
         f.write("\n".join(lines))
 
-    print(f"\n📄 Run report written to:")
+    print(f"\nRun report written to:")
     print(f"   JSON: {json_path}")
     print(f"   MD  : {md_path}\n")
 
@@ -468,7 +468,7 @@ def main(from_index: int) -> None:
         except Exception:
             status = "FAILED"
             err_text = traceback.format_exc()
-            print(f"\n❌ FAILED: {display_name}")
+            print(f"\nFAILED: {display_name}")
             print(f"   Error: Check run_reports/ for details\n")
         finally:
             duration = time.perf_counter() - t0
@@ -487,10 +487,10 @@ def main(from_index: int) -> None:
         )
 
         if status == "FAILED":
-            print("⚠️  Aborting pipeline after failure.")
+            print(" Aborting pipeline after failure.")
             break
 
-        print(f"   ✅ Completed in {duration:0.1f}s\n")
+        print(f"   Completed in {duration:0.1f}s\n")
 
     run_ended_utc = dt.datetime.utcnow()
     write_run_report(records, run_started_utc, run_ended_utc, from_index)
@@ -499,7 +499,7 @@ def main(from_index: int) -> None:
     if any_failed:
         sys.exit(1)
     else:
-        print("✅ Pipeline completed successfully.")
+        print("Pipeline completed successfully.")
 
 
 
@@ -519,13 +519,13 @@ def run_e2e_tests():
         )
         
         if result.returncode == 0:
-            print("\n✅ All E2E tests passed!")
+            print("\nAll E2E tests passed!")
             return True
         else:
-            print("\n❌ Some E2E tests failed. Review output above.")
+            print("\nSome E2E tests failed. Review output above.")
             return False
     except Exception as e:
-        print(f"\n⚠️  Could not run E2E tests: {e}")
+        print(f"\n Could not run E2E tests: {e}")
         return False
 
 
@@ -567,10 +567,10 @@ if __name__ == "__main__":
         print("="*80)
         try:
             REGISTER_SCRIPT = PROJECT_ROOT / "scripts" / "register_models.py"
-            print("\n✅ All notebooks completed. Registering models...")
+            print("\nAll notebooks completed. Registering models...")
             subprocess.check_call(["python", str(REGISTER_SCRIPT)])
-            print("✅ Model registration step completed.")
+            print("Model registration step completed.")
         except FileNotFoundError:
-            print("⚠️  Model registration script not found. Skipping.")
+            print(" Model registration script not found. Skipping.")
         except Exception as e:
-            print(f"⚠️  Model registration failed: {e}")
+            print(f" Model registration failed: {e}")

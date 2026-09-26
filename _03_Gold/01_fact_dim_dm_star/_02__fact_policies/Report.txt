@@ -1,4 +1,4 @@
-# 📘 Gold `fact_policies` Layer – Architecture & Business Report
+# Gold `fact_policies` Layer – Architecture & Business Report
 
 ## Table of Contents
 
@@ -8,19 +8,17 @@
 4. [New Gold Features](#4-new-gold-features)  
 5. [Business Bands Strategy](#5-business-bands-strategy)  
 6. [Architecture Diagram](#6-architecture-diagram)  
-7. [Interview Explanation](#7-interview-explanation)  
-
 ---
 
 ## 1. Context & Objective
 
 The Gold `fact_policies` layer transforms **clean Silver policies** into a **business-segmented analytics-ready fact table** that:
 
-- 📊 Simplifies policy data for BI consumption  
-- ✅ Adds business-friendly tenure, premium, discount bands  
-- 💼 Creates renewal outcome labels  
-- 🎯 Enables instant product & pricing analytics  
-- 🔒 Maintains transparent data quality signals  
+- Simplifies policy data for BI consumption  
+- Adds business-friendly tenure, premium, discount bands  
+- Creates renewal outcome labels  
+- Enables instant product & pricing analytics  
+- Maintains transparent data quality signals  
 
 **Enterprise standards applied:**
 - Fact table design (grain: one row per policy)  
@@ -69,8 +67,8 @@ fact_base = silver_policies.select(
 ```
 
 **Business impact:**
-- ✅ Clean, intuitive column names  
-- ✅ All core business attributes included  
+- Clean, intuitive column names  
+- All core business attributes included  
 
 ### 3.2 Derive Tenure Band
 
@@ -85,9 +83,9 @@ END
 ```
 
 **Business value:**
-- 📊 Identifies new (0–6m) vs established (2+y) policies  
-- 💰 Correlates with retention & profitability  
-- 🎯 Supports customer lifecycle analysis  
+- Identifies new (0–6m) vs established (2+y) policies  
+- Correlates with retention & profitability  
+- Supports customer lifecycle analysis  
 
 ### 3.3 Derive Premium Band
 
@@ -102,9 +100,9 @@ END
 ```
 
 **Business value:**
-- 💰 Segments by customer value tier  
-- 📈 Enables profitability analysis  
-- 🎯 Drives pricing & retention strategy  
+- Segments by customer value tier  
+- Enables profitability analysis  
+- Drives pricing & retention strategy  
 
 ### 3.4 Derive Discount Band
 
@@ -120,9 +118,9 @@ END
 ```
 
 **Business value:**
-- 🏷️ Analyzes discount elasticity  
-- 💼 Compares discounted vs non-discounted cohorts  
-- 🎯 Informs acquisition vs profitability trade-offs  
+- Analyzes discount elasticity  
+- Compares discounted vs non-discounted cohorts  
+- Informs acquisition vs profitability trade-offs  
 
 ### 3.5 Derive Renewal Outcome
 
@@ -137,9 +135,9 @@ END
 ```
 
 **Business value:**
-- 📊 Simplifies renewal funnel analysis  
-- 🎯 Identifies churn vs actively declined  
-- 💼 Supports retention strategy  
+- Simplifies renewal funnel analysis  
+- Identifies churn vs actively declined  
+- Supports retention strategy  
 
 ### 3.6 DQ Flag Carryover
 
@@ -149,9 +147,9 @@ Inherit from Silver:
 - `dq_renewal_valid` (renewal logic)  
 
 **Business value:**
-- 🔍 Dashboards can filter to "DQ-clean" records  
-- 📋 Maintains traceability  
-- ✅ Transparent governance  
+- Dashboards can filter to "DQ-clean" records  
+- Maintains traceability  
+- Transparent governance  
 
 ### 3.7 Write to Gold
 
@@ -252,20 +250,5 @@ Dashboards      BI Tools    ML Models
 
 ---
 
-## 7. Interview Explanation
 
-> "The Gold `fact_policies` table is the analytics-ready view of all policies. Silver ensures data is clean and validated. Gold transforms it into business-friendly segmentations: tenure bands for customer lifecycle analysis, premium bands for value-based segmentation, discount bands for pricing elasticity analysis, and renewal outcome labels for churn funnel analysis. This eliminates repeated logic across dashboards and ensures all teams use the same KPI definitions. The result is a trusted, BI-ready fact table that powers dashboards, churn models, and business intelligence without requiring additional transformations."
-
-### Key Talking Points
-- ✅ One row per policy (clear grain)  
-- ✅ Pre-computed business bands (Tenure, Premium, Discount)  
-- ✅ Renewal outcome labels (Renewed/Not/No Offer)  
-- ✅ DQ flags carried forward for transparency  
-- ✅ Clean column naming conventions  
-- ✅ Consistent KPI definitions across teams  
-- ✅ Fast analytics without pre-aggregation  
-- ✅ BI & ML ready  
-
----
-
-**Last Updated:** December 2025 | **Status:** Production | **Owner:** Data Engineering
+**Last Updated:** December 2025 | **Owner:** Manoj Ram Mopati

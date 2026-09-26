@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "health-insurance-ml"
 version = "1.0.0"
-description = "Enterprise-grade machine learning pipeline for healthcare insurance analytics"
+description = "Lakehouse and machine learning pipeline for health insurance analytics (PySpark, Delta Lake, MLflow)"
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
