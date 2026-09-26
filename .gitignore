@@ -124,3 +124,4 @@ build/
 .mlflow_venv/
 test-results/
 _03_Gold/delta_staging/
+mlflow.db
