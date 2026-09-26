@@ -1,4 +1,4 @@
-# Health Insurance ML Pipeline
+# Health Insurance Analytics Platform
 
 An end-to-end lakehouse and machine learning pipeline for a health insurer, built with PySpark and
 Delta Lake. Policy, member, claim and provider data moves through bronze, silver and gold layers
@@ -6,7 +6,7 @@ into fact and dimension tables, star schemas and KPI data marts; three classifie
 fraudulent claims and high-cost claims) are trained, tracked in MLflow and used for batch scoring,
 with data-quality monitoring and CI in GitHub Actions.
 
-[![CI](https://img.shields.io/github/actions/workflow/status/ManojRam7/health_insurance_project/ci.yml?branch=main&label=CI)](https://github.com/ManojRam7/health_insurance_project/actions/workflows/ci.yml)
+[![CI](https://img.shields.io/github/actions/workflow/status/ManojRam7/health_insurance_Analytics_Platform/ci.yml?branch=main&label=CI)](https://github.com/ManojRam7/health_insurance_Analytics_Platform/actions/workflows/ci.yml)
 ![PySpark](https://img.shields.io/badge/PySpark-3.5-E25A1C?logo=apachespark&logoColor=white)
 ![Delta Lake](https://img.shields.io/badge/Delta%20Lake-00ADD4)
 ![MLflow](https://img.shields.io/badge/MLflow-0194E2?logo=mlflow&logoColor=white)

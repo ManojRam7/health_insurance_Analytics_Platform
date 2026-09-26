@@ -1,6 +1,6 @@
 #!/bin/bash
 """
-Test Suite Runner for Health Insurance ML Pipeline
+Test Suite Runner for Health Insurance Analytics Platform
 Executes all ML-specific and pipeline tests with coverage reporting
 """
 
@@ -21,7 +21,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}╔════════════════════════════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║        Health Insurance ML Pipeline Test Suite Runner            ║${NC}"
+echo -e "${BLUE}║     Health Insurance Analytics Platform Test Suite Runner      ║${NC}"
 echo -e "${BLUE}╚════════════════════════════════════════════════════════════════╝${NC}"
 echo ""
 

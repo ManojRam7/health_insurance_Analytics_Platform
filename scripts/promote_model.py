@@ -5,7 +5,7 @@ import argparse
 import mlflow
 from mlflow.tracking import MlflowClient
 
-PROJECT_ROOT = Path("/Users/manojrammopati/Public/Projects/health_insurance_project")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 TRACKING_URI = f"file:{PROJECT_ROOT / 'mlruns'}"
 mlflow.set_tracking_uri(TRACKING_URI)
 

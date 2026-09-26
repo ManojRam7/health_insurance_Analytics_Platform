@@ -1,7 +1,7 @@
 .PHONY: help install install-dev lint format test coverage clean docs
 
 help:
-	@echo "Health Insurance ML Pipeline - Available Commands"
+	@echo "Health Insurance Analytics Platform - Available Commands"
 	@echo ""
 	@echo "Setup:"
 	@echo "  make install          - Install dependencies"

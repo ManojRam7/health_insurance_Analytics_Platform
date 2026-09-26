@@ -54,10 +54,10 @@ viz = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/ManojRam7/health_insurance_project"
-Documentation = "https://github.com/ManojRam7/health_insurance_project#readme"
-Repository = "https://github.com/ManojRam7/health_insurance_project.git"
-Issues = "https://github.com/ManojRam7/health_insurance_project/issues"
+Homepage = "https://github.com/ManojRam7/health_insurance_Analytics_Platform"
+Documentation = "https://github.com/ManojRam7/health_insurance_Analytics_Platform#readme"
+Repository = "https://github.com/ManojRam7/health_insurance_Analytics_Platform.git"
+Issues = "https://github.com/ManojRam7/health_insurance_Analytics_Platform/issues"
 
 [tool.setuptools]
 packages = ["src"]
